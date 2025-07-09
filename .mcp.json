@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "git": {
+      "command": "uvx",
+      "args": ["mcp-server-git"]
+    },
+    "Context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    }
+  }
+}
