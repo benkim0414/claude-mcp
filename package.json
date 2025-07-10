@@ -27,6 +27,34 @@
       "title": "Switch MCP Profile",
       "description": "Switch to a different MCP server profile",
       "mode": "view"
+    },
+    {
+      "name": "edit-profile",
+      "title": "Edit MCP Profile",
+      "description": "Edit an existing MCP server profile",
+      "mode": "view",
+      "arguments": [
+        {
+          "name": "profileId",
+          "placeholder": "Profile ID",
+          "type": "text",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "delete-profile",
+      "title": "Delete MCP Profile",
+      "description": "Delete an MCP server profile",
+      "mode": "view",
+      "arguments": [
+        {
+          "name": "profileId",
+          "placeholder": "Profile ID",
+          "type": "text",
+          "required": true
+        }
+      ]
     }
   ],
   "preferences": [

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { List, ActionPanel, Action, Toast, showToast, Icon, Color, confirmAlert } from "@raycast/api";
+import { List, ActionPanel, Action, Toast, showToast, Icon, Color, confirmAlert, open } from "@raycast/api";
 import { getProfileSummaries, getActiveProfile, deleteProfile } from "./utils/storage";
 import { ProfileSummary } from "./types";
 
@@ -74,22 +74,20 @@ export default function ListProfiles() {
       return;
     }
 
-    // TODO: Implement profile switching logic
-    // For now, show a toast indicating the action
-    await showToast({
-      style: Toast.Style.Animated,
-      title: "Profile switching",
-      message: `Would switch to ${profile.name}`,
-    });
+    // Open switch profile command
+    await open(`raycast://extensions/gunwoo-ben-kim/claude-mcp/switch-profile`);
   };
 
   const handleEditProfile = async (profile: ProfileSummary) => {
-    // TODO: Implement profile editing logic
-    await showToast({
-      style: Toast.Style.Animated,
-      title: "Edit profile",
-      message: `Would edit ${profile.name}`,
-    });
+    // Open edit profile command with profile ID
+    await open(
+      `raycast://extensions/gunwoo-ben-kim/claude-mcp/edit-profile?arguments=${encodeURIComponent(JSON.stringify({ profileId: profile.id }))}`,
+    );
+  };
+
+  const handleCreateProfile = async () => {
+    // Open create profile command
+    await open(`raycast://extensions/gunwoo-ben-kim/claude-mcp/create-profile`);
   };
 
   const handleDeleteProfile = async (profile: ProfileSummary) => {
@@ -229,7 +227,7 @@ export default function ListProfiles() {
           actions={
             <ActionPanel>
               <Action title="Refresh" onAction={loadProfiles} icon={Icon.ArrowClockwise} />
-              <Action title="Create Profile" onAction={() => {}} icon={Icon.Plus} />
+              <Action title="Create Profile" onAction={handleCreateProfile} icon={Icon.Plus} />
             </ActionPanel>
           }
         />
@@ -275,7 +273,7 @@ export default function ListProfiles() {
                   />
                   <Action
                     title="Create New Profile"
-                    onAction={() => {}}
+                    onAction={handleCreateProfile}
                     icon={Icon.Plus}
                     shortcut={{ modifiers: ["cmd"], key: "n" }}
                   />
