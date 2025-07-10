@@ -4,7 +4,7 @@
   "title": "Claude MCP",
   "description": "A Raycast extension for managing multiple MCP server configurations for Claude Desktop. Create, store, and switch between profiles with automatic restart functionality.",
   "icon": "icon.png",
-  "author": "Gunwoo Ben Kim",
+  "author": "benkim0414",
   "categories": [
     "Developer Tools"
   ],

@@ -139,86 +139,81 @@ export default function SwitchProfile() {
 
       const backupPath = backupResult.data!;
 
-      try {
-        // Read current configuration to preserve non-MCP settings
-        toast.message = "Reading current configuration...";
-        const currentConfigResult = await readClaudeConfig();
+      // Read current configuration to preserve non-MCP settings
+      toast.message = "Reading current configuration...";
+      const currentConfigResult = await readClaudeConfig();
 
-        if (!currentConfigResult.success) {
-          throw new Error(`Failed to read current config: ${currentConfigResult.error}`);
-        }
+      if (!currentConfigResult.success) {
+        throw new Error(`Failed to read current config: ${currentConfigResult.error}`);
+      }
 
-        const currentConfig = currentConfigResult.data || {};
+      const currentConfig = currentConfigResult.data || {};
 
-        // Create new configuration with profile's MCP servers
-        const newConfig = {
-          ...currentConfig,
-          mcpServers: fullProfile.mcpServers,
-        };
+      // Create new configuration with profile's MCP servers
+      const newConfig = {
+        ...currentConfig,
+        mcpServers: fullProfile.mcpServers,
+      };
 
-        // Write new configuration
-        toast.message = "Writing new configuration...";
-        const writeResult = await writeClaudeConfig(newConfig, "profile_switch");
+      // Write new configuration
+      toast.message = "Writing new configuration...";
+      const writeResult = await writeClaudeConfig(newConfig, "profile_switch");
 
-        if (!writeResult.success) {
-          throw new Error(`Failed to write configuration: ${writeResult.error}`);
-        }
+      if (!writeResult.success) {
+        throw new Error(`Failed to write configuration: ${writeResult.error}`);
+      }
 
-        // Update active profile in storage
-        toast.message = "Updating active profile...";
-        const setActiveResult = await setActiveProfile(profile.id);
+      // Update active profile in storage
+      toast.message = "Updating active profile...";
+      const setActiveResult = await setActiveProfile(profile.id);
 
-        if (!setActiveResult.success) {
-          console.warn("Failed to update active profile in storage:", setActiveResult.error);
-          // Don't fail the entire operation for this
-        }
+      if (!setActiveResult.success) {
+        console.warn("Failed to update active profile in storage:", setActiveResult.error);
+        // Don't fail the entire operation for this
+      }
 
-        // Restart Claude Desktop
-        toast.message = "Restarting Claude Desktop...";
-        const restartResult = await restartClaudeWithRetry();
+      // Restart Claude Desktop
+      toast.message = "Restarting Claude Desktop...";
+      const restartResult = await restartClaudeWithRetry();
 
-        if (!restartResult.success) {
-          // Attempt to restore backup
-          console.error("Failed to restart Claude Desktop:", restartResult.error);
+      if (!restartResult.success) {
+        // Attempt to restore backup
+        console.error("Failed to restart Claude Desktop:", restartResult.error);
 
-          toast.message = "Restart failed, attempting to restore backup...";
-          try {
-            const restoreResult = await import("./utils/config-manager").then((m) => m.restoreConfig(backupPath));
+        toast.message = "Restart failed, attempting to restore backup...";
+        try {
+          const restoreResult = await import("./utils/config-manager").then((m) => m.restoreConfig(backupPath));
 
-            if (restoreResult.success) {
-              throw new Error(
-                `Failed to restart Claude Desktop: ${restartResult.error}. Configuration has been restored from backup.`,
-              );
-            } else {
-              throw new Error(
-                `Failed to restart Claude Desktop: ${restartResult.error}. CRITICAL: Failed to restore backup. You may need to manually restore your Claude Desktop configuration.`,
-              );
-            }
-          } catch (restoreError) {
+          if (restoreResult.success) {
             throw new Error(
-              `Failed to restart Claude Desktop: ${restartResult.error}. CRITICAL: Failed to restore backup: ${restoreError instanceof Error ? restoreError.message : String(restoreError)}`,
+              `Failed to restart Claude Desktop: ${restartResult.error}. Configuration has been restored from backup.`,
+            );
+          } else {
+            throw new Error(
+              `Failed to restart Claude Desktop: ${restartResult.error}. CRITICAL: Failed to restore backup. You may need to manually restore your Claude Desktop configuration.`,
             );
           }
+        } catch (restoreError) {
+          throw new Error(
+            `Failed to restart Claude Desktop: ${restartResult.error}. CRITICAL: Failed to restore backup: ${restoreError instanceof Error ? restoreError.message : String(restoreError)}`,
+          );
         }
-
-        // Update local state
-        setState((prev) => ({
-          ...prev,
-          activeProfileId: profile.id,
-          profiles: prev.profiles.map((p) => ({
-            ...p,
-            isActive: p.id === profile.id,
-          })),
-        }));
-
-        // Show success
-        toast.style = Toast.Style.Success;
-        toast.title = `Switched to ${profile.name}`;
-        toast.message = `Claude Desktop restarted in ${Math.round(restartResult.data!.totalTime / 1000)}s`;
-      } catch (switchError) {
-        // If we get here, something went wrong after backup was created
-        throw switchError;
       }
+
+      // Update local state
+      setState((prev) => ({
+        ...prev,
+        activeProfileId: profile.id,
+        profiles: prev.profiles.map((p) => ({
+          ...p,
+          isActive: p.id === profile.id,
+        })),
+      }));
+
+      // Show success
+      toast.style = Toast.Style.Success;
+      toast.title = `Switched to ${profile.name}`;
+      toast.message = `Claude Desktop restarted in ${Math.round(restartResult.data!.totalTime / 1000)}s`;
     } catch (error) {
       await showToast({
         style: Toast.Style.Failure,

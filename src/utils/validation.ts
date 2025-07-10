@@ -4,7 +4,7 @@
  */
 
 import { promises as fs } from "fs";
-import { join, isAbsolute, resolve } from "path";
+import { isAbsolute } from "path";
 import { MCPProfile, MCPServersConfig, MCPServerConfig, ValidationResult } from "../types";
 
 // Validation severity levels
@@ -27,7 +27,7 @@ export interface ValidationIssue {
   field?: string;
   message: string;
   code: string;
-  value?: any;
+  value?: unknown;
 }
 
 // Validation configuration
@@ -81,7 +81,7 @@ function createIssue(
   code: string,
   message: string,
   field?: string,
-  value?: any,
+  value?: unknown,
 ): ValidationIssue {
   return { severity, code, message, field, value };
 }
@@ -100,12 +100,10 @@ function isCommandSafe(command: string): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
 
   // Check for dangerous commands
-  const commandBase =
-    command
-      .split(/[\s\/]/)
-      .pop()
-      ?.toLowerCase() || "";
-  if (VALIDATION_CONFIG.DANGEROUS_COMMANDS.includes(commandBase as any)) {
+  const commandBase = command.split(/[\s/]/).pop()?.toLowerCase() || "";
+  if (
+    VALIDATION_CONFIG.DANGEROUS_COMMANDS.includes(commandBase as (typeof VALIDATION_CONFIG.DANGEROUS_COMMANDS)[number])
+  ) {
     issues.push(
       createIssue(
         ValidationSeverity.ERROR,
@@ -291,7 +289,7 @@ function validateEnvironmentVariables(env: Record<string, string> | undefined): 
       );
     }
 
-    if (VALIDATION_CONFIG.RESERVED_ENV_VARS.includes(key as any)) {
+    if (VALIDATION_CONFIG.RESERVED_ENV_VARS.includes(key as (typeof VALIDATION_CONFIG.RESERVED_ENV_VARS)[number])) {
       issues.push(
         createIssue(
           ValidationSeverity.WARNING,
@@ -676,7 +674,7 @@ export async function validateProfile(profile: Partial<MCPProfile>): Promise<Det
 /**
  * Validate Claude Desktop configuration structure
  */
-export function validateConfiguration(config: any): DetailedValidationResult {
+export function validateConfiguration(config: unknown): DetailedValidationResult {
   const issues: ValidationIssue[] = [];
 
   if (!config || typeof config !== "object" || Array.isArray(config)) {

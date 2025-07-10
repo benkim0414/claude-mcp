@@ -11,7 +11,6 @@ const execAsync = promisify(exec);
 
 // Claude Desktop application identifiers
 const CLAUDE_APP_NAME = "Claude";
-const CLAUDE_BUNDLE_ID = "com.anthropic.claude";
 const CLAUDE_APP_PATH = "/Applications/Claude.app";
 
 // Process management configuration
@@ -526,7 +525,16 @@ export async function getClaudeProcessInfo(): Promise<
       };
     }
 
-    const result: any = {
+    const result: {
+      isInstalled: boolean;
+      isRunning: boolean;
+      processInfo?: {
+        pid: number;
+        processName: string;
+        startTime?: string;
+        memoryUsage?: string;
+      };
+    } = {
       isInstalled: installedResult.data,
       isRunning: runningResult.data?.isRunning || false,
     };
@@ -551,7 +559,7 @@ export async function getClaudeProcessInfo(): Promise<
             memoryUsage: parts[parts.length - 1] ? `${parts[parts.length - 1]} KB` : undefined,
           };
         }
-      } catch (error) {
+      } catch {
         // If detailed info fails, still return basic info
         result.processInfo = {
           pid: runningResult.data.processId,
