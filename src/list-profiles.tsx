@@ -25,13 +25,10 @@ export default function ListProfiles() {
 
   const loadProfiles = async () => {
     try {
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       // Load profiles and active profile in parallel
-      const [profilesResult, activeProfileResult] = await Promise.all([
-        getProfileSummaries(),
-        getActiveProfile(),
-      ]);
+      const [profilesResult, activeProfileResult] = await Promise.all([getProfileSummaries(), getActiveProfile()]);
 
       if (!profilesResult.success) {
         throw new Error(profilesResult.error || "Failed to load profiles");
@@ -42,7 +39,7 @@ export default function ListProfiles() {
       }
 
       // Update profiles with active status
-      const profiles = (profilesResult.data || []).map(profile => ({
+      const profiles = (profilesResult.data || []).map((profile) => ({
         ...profile,
         isActive: profile.id === activeProfileResult.data,
       }));
@@ -54,7 +51,7 @@ export default function ListProfiles() {
         error: null,
       });
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isLoading: false,
         error: error instanceof Error ? error.message : "Failed to load profiles",
@@ -115,7 +112,7 @@ export default function ListProfiles() {
 
     try {
       const deleteResult = await deleteProfile(profile.id);
-      
+
       if (!deleteResult.success) {
         throw new Error(deleteResult.error || "Failed to delete profile");
       }
@@ -146,35 +143,35 @@ export default function ListProfiles() {
 
   const getProfileSubtitle = (profile: ProfileSummary) => {
     const parts = [];
-    
+
     if (profile.description) {
       parts.push(profile.description);
     }
-    
+
     if (profile.serverCount > 0) {
       parts.push(`${profile.serverCount} server${profile.serverCount !== 1 ? "s" : ""}`);
     }
-    
+
     return parts.join(" • ");
   };
 
   const getProfileAccessories = (profile: ProfileSummary) => {
     const accessories = [];
-    
+
     if (profile.isActive) {
-      accessories.push({ 
-        text: "Active", 
-        icon: { source: Icon.CheckCircle, tintColor: Color.Green } 
+      accessories.push({
+        text: "Active",
+        icon: { source: Icon.CheckCircle, tintColor: Color.Green },
       });
     }
-    
+
     // Show last used date if available
     if (profile.lastUsed) {
       const lastUsedDate = new Date(profile.lastUsed);
       const now = new Date();
       const diffMs = now.getTime() - lastUsedDate.getTime();
       const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-      
+
       if (diffDays === 0) {
         accessories.push({ text: "Used today" });
       } else if (diffDays === 1) {
@@ -190,7 +187,7 @@ export default function ListProfiles() {
       const now = new Date();
       const diffMs = now.getTime() - createdDate.getTime();
       const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-      
+
       if (diffDays === 0) {
         accessories.push({ text: "Created today" });
       } else if (diffDays === 1) {
@@ -201,7 +198,7 @@ export default function ListProfiles() {
         accessories.push({ text: `Created ${createdDate.toLocaleDateString()}` });
       }
     }
-    
+
     return accessories;
   };
 
@@ -223,11 +220,7 @@ export default function ListProfiles() {
   }
 
   return (
-    <List
-      isLoading={state.isLoading}
-      searchBarPlaceholder="Search profiles..."
-      navigationTitle="MCP Profiles"
-    >
+    <List isLoading={state.isLoading} searchBarPlaceholder="Search profiles..." navigationTitle="MCP Profiles">
       {state.profiles.length === 0 ? (
         <List.EmptyView
           icon={{ source: Icon.Folder, tintColor: Color.SecondaryText }}
@@ -274,15 +267,15 @@ export default function ListProfiles() {
                   />
                 </ActionPanel.Section>
                 <ActionPanel.Section>
-                  <Action 
-                    title="Refresh" 
-                    onAction={loadProfiles} 
+                  <Action
+                    title="Refresh"
+                    onAction={loadProfiles}
                     icon={Icon.ArrowClockwise}
                     shortcut={{ modifiers: ["cmd"], key: "r" }}
                   />
-                  <Action 
-                    title="Create New Profile" 
-                    onAction={() => {}} 
+                  <Action
+                    title="Create New Profile"
+                    onAction={() => {}}
                     icon={Icon.Plus}
                     shortcut={{ modifiers: ["cmd"], key: "n" }}
                   />

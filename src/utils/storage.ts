@@ -227,7 +227,7 @@ export async function getProfile(id: ProfileId): Promise<StorageResult<MCPProfil
 
     const profilesObject = JSON.parse(profilesData);
     const profileData = profilesObject[id];
-    
+
     if (!profileData) {
       return {
         success: false,
@@ -360,7 +360,7 @@ export async function setActiveProfile(id: ProfileId): Promise<StorageResult<boo
     }
 
     await LocalStorage.setItem(STORAGE_KEYS.ACTIVE_PROFILE, id);
-    
+
     // Update usage statistics
     await updateProfileStats(id);
 

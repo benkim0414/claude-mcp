@@ -28,13 +28,10 @@ export default function SwitchProfile() {
 
   const loadProfiles = async () => {
     try {
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       // Load profiles and active profile in parallel
-      const [profilesResult, activeProfileResult] = await Promise.all([
-        getProfileSummaries(),
-        getActiveProfile(),
-      ]);
+      const [profilesResult, activeProfileResult] = await Promise.all([getProfileSummaries(), getActiveProfile()]);
 
       if (!profilesResult.success) {
         throw new Error(profilesResult.error || "Failed to load profiles");
@@ -51,7 +48,7 @@ export default function SwitchProfile() {
         error: null,
       });
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isLoading: false,
         error: error instanceof Error ? error.message : "Failed to load profiles",
@@ -86,8 +83,8 @@ export default function SwitchProfile() {
 
       // Get the full profile for validation
       toast.message = "Loading profile configuration...";
-      const profileResult = await import("./utils/storage").then(m => m.getProfile(profile.id));
-      
+      const profileResult = await import("./utils/storage").then((m) => m.getProfile(profile.id));
+
       if (!profileResult.success || !profileResult.data) {
         throw new Error(profileResult.error || "Failed to load profile");
       }
@@ -97,14 +94,14 @@ export default function SwitchProfile() {
       // Validate profile before switching
       toast.message = "Validating profile configuration...";
       const validationResult = await validateProfile(fullProfile);
-      
+
       if (!validationResult.valid) {
         const errorMessages = validationResult.errors.join(", ");
         throw new Error(`Profile validation failed: ${errorMessages}`);
       }
 
       if (validationResult.warnings.length > 0) {
-        const warningMessages = validationResult.warnings.map(w => w.message).join(", ");
+        const warningMessages = validationResult.warnings.map((w) => w.message).join(", ");
         const shouldContinue = await confirmAlert({
           title: "Profile has warnings",
           message: `The profile has warnings: ${warningMessages}\n\nDo you want to continue switching?`,
@@ -135,7 +132,7 @@ export default function SwitchProfile() {
       // Create backup of current configuration
       toast.message = "Creating backup of current configuration...";
       const backupResult = await backupConfig("profile_switch");
-      
+
       if (!backupResult.success) {
         throw new Error(`Failed to create backup: ${backupResult.error}`);
       }
@@ -146,7 +143,7 @@ export default function SwitchProfile() {
         // Read current configuration to preserve non-MCP settings
         toast.message = "Reading current configuration...";
         const currentConfigResult = await readClaudeConfig();
-        
+
         if (!currentConfigResult.success) {
           throw new Error(`Failed to read current config: ${currentConfigResult.error}`);
         }
@@ -162,7 +159,7 @@ export default function SwitchProfile() {
         // Write new configuration
         toast.message = "Writing new configuration...";
         const writeResult = await writeClaudeConfig(newConfig, "profile_switch");
-        
+
         if (!writeResult.success) {
           throw new Error(`Failed to write configuration: ${writeResult.error}`);
         }
@@ -170,7 +167,7 @@ export default function SwitchProfile() {
         // Update active profile in storage
         toast.message = "Updating active profile...";
         const setActiveResult = await setActiveProfile(profile.id);
-        
+
         if (!setActiveResult.success) {
           console.warn("Failed to update active profile in storage:", setActiveResult.error);
           // Don't fail the entire operation for this
@@ -179,32 +176,36 @@ export default function SwitchProfile() {
         // Restart Claude Desktop
         toast.message = "Restarting Claude Desktop...";
         const restartResult = await restartClaudeWithRetry();
-        
+
         if (!restartResult.success) {
           // Attempt to restore backup
           console.error("Failed to restart Claude Desktop:", restartResult.error);
-          
+
           toast.message = "Restart failed, attempting to restore backup...";
           try {
-            const restoreResult = await import("./utils/config-manager").then(m => 
-              m.restoreConfig(backupPath)
-            );
-            
+            const restoreResult = await import("./utils/config-manager").then((m) => m.restoreConfig(backupPath));
+
             if (restoreResult.success) {
-              throw new Error(`Failed to restart Claude Desktop: ${restartResult.error}. Configuration has been restored from backup.`);
+              throw new Error(
+                `Failed to restart Claude Desktop: ${restartResult.error}. Configuration has been restored from backup.`,
+              );
             } else {
-              throw new Error(`Failed to restart Claude Desktop: ${restartResult.error}. CRITICAL: Failed to restore backup. You may need to manually restore your Claude Desktop configuration.`);
+              throw new Error(
+                `Failed to restart Claude Desktop: ${restartResult.error}. CRITICAL: Failed to restore backup. You may need to manually restore your Claude Desktop configuration.`,
+              );
             }
           } catch (restoreError) {
-            throw new Error(`Failed to restart Claude Desktop: ${restartResult.error}. CRITICAL: Failed to restore backup: ${restoreError instanceof Error ? restoreError.message : String(restoreError)}`);
+            throw new Error(
+              `Failed to restart Claude Desktop: ${restartResult.error}. CRITICAL: Failed to restore backup: ${restoreError instanceof Error ? restoreError.message : String(restoreError)}`,
+            );
           }
         }
 
         // Update local state
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           activeProfileId: profile.id,
-          profiles: prev.profiles.map(p => ({
+          profiles: prev.profiles.map((p) => ({
             ...p,
             isActive: p.id === profile.id,
           })),
@@ -214,12 +215,10 @@ export default function SwitchProfile() {
         toast.style = Toast.Style.Success;
         toast.title = `Switched to ${profile.name}`;
         toast.message = `Claude Desktop restarted in ${Math.round(restartResult.data!.totalTime / 1000)}s`;
-
       } catch (switchError) {
         // If we get here, something went wrong after backup was created
         throw switchError;
       }
-
     } catch (error) {
       await showToast({
         style: Toast.Style.Failure,
@@ -238,19 +237,19 @@ export default function SwitchProfile() {
 
   const getProfileAccessories = (profile: ProfileSummary) => {
     const accessories = [];
-    
+
     if (profile.isActive) {
       accessories.push({ text: "Active", icon: { source: Icon.CheckCircle, tintColor: Color.Green } });
     }
-    
+
     accessories.push({ text: `${profile.serverCount} server${profile.serverCount !== 1 ? "s" : ""}` });
-    
+
     if (profile.lastUsed) {
       const lastUsedDate = new Date(profile.lastUsed);
       const now = new Date();
       const diffMs = now.getTime() - lastUsedDate.getTime();
       const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-      
+
       if (diffDays === 0) {
         accessories.push({ text: "Today" });
       } else if (diffDays === 1) {
@@ -261,7 +260,7 @@ export default function SwitchProfile() {
         accessories.push({ text: lastUsedDate.toLocaleDateString() });
       }
     }
-    
+
     return accessories;
   };
 
@@ -283,11 +282,7 @@ export default function SwitchProfile() {
   }
 
   return (
-    <List
-      isLoading={state.isLoading}
-      searchBarPlaceholder="Search profiles..."
-      navigationTitle="Switch MCP Profile"
-    >
+    <List isLoading={state.isLoading} searchBarPlaceholder="Search profiles..." navigationTitle="Switch MCP Profile">
       {state.profiles.length === 0 ? (
         <List.EmptyView
           icon={{ source: Icon.Folder, tintColor: Color.SecondaryText }}

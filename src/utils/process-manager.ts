@@ -73,20 +73,20 @@ async function execWithTimeout(command: string, timeout: number): Promise<{ stdo
 export async function isClaudeRunning(): Promise<StorageResult<ProcessStatus>> {
   try {
     // Use pgrep to check for Claude process
-    const { stdout } = await execWithTimeout(
-      `pgrep -f "${CLAUDE_APP_NAME}"`,
-      PROCESS_CONFIG.CHECK_TIMEOUT
-    );
+    const { stdout } = await execWithTimeout(`pgrep -f "${CLAUDE_APP_NAME}"`, PROCESS_CONFIG.CHECK_TIMEOUT);
 
     if (stdout.trim()) {
-      const processIds = stdout.trim().split('\n').map(pid => parseInt(pid, 10));
+      const processIds = stdout
+        .trim()
+        .split("\n")
+        .map((pid) => parseInt(pid, 10));
       const primaryPid = processIds[0];
 
       // Get process name for verification
       try {
         const { stdout: psOutput } = await execWithTimeout(
           `ps -p ${primaryPid} -o comm=`,
-          PROCESS_CONFIG.CHECK_TIMEOUT
+          PROCESS_CONFIG.CHECK_TIMEOUT,
         );
 
         return {
@@ -117,7 +117,7 @@ export async function isClaudeRunning(): Promise<StorageResult<ProcessStatus>> {
     };
   } catch (error) {
     // pgrep returns exit code 1 when no processes found, which is normal
-    if (error instanceof Error && error.message.includes('Command failed')) {
+    if (error instanceof Error && error.message.includes("Command failed")) {
       return {
         success: true,
         data: {
@@ -141,7 +141,7 @@ export async function isClaudeInstalled(): Promise<StorageResult<boolean>> {
     // Check if Claude.app exists in Applications
     const { stdout } = await execWithTimeout(
       `test -d "${CLAUDE_APP_PATH}" && echo "exists"`,
-      PROCESS_CONFIG.CHECK_TIMEOUT
+      PROCESS_CONFIG.CHECK_TIMEOUT,
     );
 
     return {
@@ -161,7 +161,7 @@ export async function isClaudeInstalled(): Promise<StorageResult<boolean>> {
  */
 async function quitClaudeAppleScript(): Promise<ProcessOperationResult> {
   const startTime = Date.now();
-  
+
   try {
     const appleScript = `
       tell application "System Events"
@@ -174,10 +174,7 @@ async function quitClaudeAppleScript(): Promise<ProcessOperationResult> {
       end tell
     `;
 
-    const { stdout } = await execWithTimeout(
-      `osascript -e '${appleScript}'`,
-      PROCESS_CONFIG.QUIT_TIMEOUT
-    );
+    const { stdout } = await execWithTimeout(`osascript -e '${appleScript}'`, PROCESS_CONFIG.QUIT_TIMEOUT);
 
     const timeElapsed = Date.now() - startTime;
 
@@ -228,12 +225,9 @@ async function quitClaudeAppleScript(): Promise<ProcessOperationResult> {
  */
 async function forceQuitClaude(): Promise<ProcessOperationResult> {
   const startTime = Date.now();
-  
+
   try {
-    await execWithTimeout(
-      `killall "${CLAUDE_APP_NAME}"`,
-      PROCESS_CONFIG.QUIT_TIMEOUT
-    );
+    await execWithTimeout(`killall "${CLAUDE_APP_NAME}"`, PROCESS_CONFIG.QUIT_TIMEOUT);
 
     // Wait for process to be killed
     let attempts = 0;
@@ -261,7 +255,7 @@ async function forceQuitClaude(): Promise<ProcessOperationResult> {
     };
   } catch (error) {
     // killall returns exit code 1 if no processes found, which might be fine
-    if (error instanceof Error && error.message.includes('Command failed')) {
+    if (error instanceof Error && error.message.includes("Command failed")) {
       const statusResult = await isClaudeRunning();
       if (statusResult.success && statusResult.data && !statusResult.data.isRunning) {
         return {
@@ -318,7 +312,7 @@ export async function quitClaude(): Promise<StorageResult<ProcessOperationResult
     // Fall back to force quit
     console.warn("Graceful quit failed, attempting force quit:", gracefulResult.error);
     const forceResult = await forceQuitClaude();
-    
+
     return {
       success: true,
       data: {
@@ -339,7 +333,7 @@ export async function quitClaude(): Promise<StorageResult<ProcessOperationResult
  */
 export async function startClaude(): Promise<StorageResult<ProcessOperationResult>> {
   const startTime = Date.now();
-  
+
   try {
     // Check if Claude is already running
     const statusResult = await isClaudeRunning();
@@ -378,10 +372,7 @@ export async function startClaude(): Promise<StorageResult<ProcessOperationResul
     }
 
     // Start Claude Desktop
-    await execWithTimeout(
-      `open "${CLAUDE_APP_PATH}"`,
-      PROCESS_CONFIG.START_TIMEOUT
-    );
+    await execWithTimeout(`open "${CLAUDE_APP_PATH}"`, PROCESS_CONFIG.START_TIMEOUT);
 
     // Wait for process to start
     let attempts = 0;
@@ -389,7 +380,7 @@ export async function startClaude(): Promise<StorageResult<ProcessOperationResul
 
     while (attempts < maxAttempts) {
       await sleep(PROCESS_CONFIG.PROCESS_CHECK_INTERVAL);
-      
+
       const statusResult = await isClaudeRunning();
       if (statusResult.success && statusResult.data && statusResult.data.isRunning) {
         return {
@@ -420,13 +411,15 @@ export async function startClaude(): Promise<StorageResult<ProcessOperationResul
 /**
  * Restart Claude Desktop (quit then start)
  */
-export async function restartClaude(): Promise<StorageResult<{
-  quitResult: ProcessOperationResult;
-  startResult: ProcessOperationResult;
-  totalTime: number;
-}>> {
+export async function restartClaude(): Promise<
+  StorageResult<{
+    quitResult: ProcessOperationResult;
+    startResult: ProcessOperationResult;
+    totalTime: number;
+  }>
+> {
   const startTime = Date.now();
-  
+
   try {
     // First quit Claude
     const quitResult = await quitClaude();
@@ -470,17 +463,19 @@ export async function restartClaude(): Promise<StorageResult<{
 /**
  * Restart Claude Desktop with retry logic
  */
-export async function restartClaudeWithRetry(): Promise<StorageResult<{
-  quitResult: ProcessOperationResult;
-  startResult: ProcessOperationResult;
-  totalTime: number;
-  attempts: number;
-}>> {
+export async function restartClaudeWithRetry(): Promise<
+  StorageResult<{
+    quitResult: ProcessOperationResult;
+    startResult: ProcessOperationResult;
+    totalTime: number;
+    attempts: number;
+  }>
+> {
   let lastError = "";
-  
+
   for (let attempt = 1; attempt <= PROCESS_CONFIG.RETRY_ATTEMPTS; attempt++) {
     const result = await restartClaude();
-    
+
     if (result.success) {
       return {
         success: true,
@@ -492,7 +487,7 @@ export async function restartClaudeWithRetry(): Promise<StorageResult<{
     }
 
     lastError = result.error || "Unknown error";
-    
+
     if (attempt < PROCESS_CONFIG.RETRY_ATTEMPTS) {
       console.warn(`Restart attempt ${attempt} failed, retrying in ${PROCESS_CONFIG.RETRY_DELAY}ms:`, lastError);
       await sleep(PROCESS_CONFIG.RETRY_DELAY * attempt); // Exponential backoff
@@ -508,16 +503,18 @@ export async function restartClaudeWithRetry(): Promise<StorageResult<{
 /**
  * Get detailed process information for debugging
  */
-export async function getClaudeProcessInfo(): Promise<StorageResult<{
-  isInstalled: boolean;
-  isRunning: boolean;
-  processInfo?: {
-    pid: number;
-    processName: string;
-    startTime?: string;
-    memoryUsage?: string;
-  };
-}>> {
+export async function getClaudeProcessInfo(): Promise<
+  StorageResult<{
+    isInstalled: boolean;
+    isRunning: boolean;
+    processInfo?: {
+      pid: number;
+      processName: string;
+      startTime?: string;
+      memoryUsage?: string;
+    };
+  }>
+> {
   try {
     const installedResult = await isClaudeInstalled();
     const runningResult = await isClaudeRunning();
@@ -539,18 +536,18 @@ export async function getClaudeProcessInfo(): Promise<StorageResult<{
         // Get detailed process information
         const { stdout } = await execWithTimeout(
           `ps -p ${runningResult.data.processId} -o pid,comm,lstart,rss`,
-          PROCESS_CONFIG.CHECK_TIMEOUT
+          PROCESS_CONFIG.CHECK_TIMEOUT,
         );
 
-        const lines = stdout.trim().split('\n');
+        const lines = stdout.trim().split("\n");
         if (lines.length > 1) {
           const processLine = lines[1].trim();
           const parts = processLine.split(/\s+/);
-          
+
           result.processInfo = {
             pid: runningResult.data.processId,
             processName: runningResult.data.processName || parts[1] || "Unknown",
-            startTime: parts.slice(2, -1).join(' ') || undefined,
+            startTime: parts.slice(2, -1).join(" ") || undefined,
             memoryUsage: parts[parts.length - 1] ? `${parts[parts.length - 1]} KB` : undefined,
           };
         }

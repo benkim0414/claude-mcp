@@ -110,7 +110,7 @@ function validateConfigStructure(config: unknown): config is ClaudeDesktopConfig
   }
 
   const configObj = config as Record<string, unknown>;
-  
+
   // If mcpServers exists, it should be an object
   if (configObj.mcpServers !== undefined) {
     if (typeof configObj.mcpServers !== "object" || configObj.mcpServers === null) {
@@ -144,7 +144,7 @@ export async function readClaudeConfig(): Promise<StorageResult<ClaudeDesktopCon
 
     // Read and parse configuration
     const configContent = await fs.readFile(CLAUDE_CONFIG_PATH, "utf-8");
-    
+
     if (configContent.trim() === "") {
       return {
         success: true,
@@ -187,7 +187,7 @@ export async function readClaudeConfig(): Promise<StorageResult<ClaudeDesktopCon
  */
 export async function writeClaudeConfig(
   config: ClaudeDesktopConfig,
-  reason = "profile_switch"
+  reason = "profile_switch",
 ): Promise<StorageResult<boolean>> {
   try {
     // Validate input config
@@ -223,10 +223,10 @@ export async function writeClaudeConfig(
 
     // Atomic write: write to temporary file first
     const tempPath = `${CLAUDE_CONFIG_PATH}.tmp.${Date.now()}`;
-    
+
     try {
       await fs.writeFile(tempPath, configContent, "utf-8");
-      
+
       // Verify the temporary file was written correctly
       const verifyContent = await fs.readFile(tempPath, "utf-8");
       if (verifyContent !== configContent) {
@@ -247,7 +247,7 @@ export async function writeClaudeConfig(
       } catch {
         // Ignore cleanup errors
       }
-      
+
       throw writeError;
     }
   } catch (error) {
@@ -370,10 +370,10 @@ export async function restoreConfig(backupPath: string): Promise<StorageResult<b
 
     // Atomic restore: write to temporary file first
     const tempPath = `${CLAUDE_CONFIG_PATH}.restore.${Date.now()}`;
-    
+
     try {
       await fs.writeFile(tempPath, backupContent, "utf-8");
-      
+
       // Verify the temporary file was written correctly
       const verifyContent = await fs.readFile(tempPath, "utf-8");
       if (verifyContent !== backupContent) {
@@ -394,7 +394,7 @@ export async function restoreConfig(backupPath: string): Promise<StorageResult<b
       } catch {
         // Ignore cleanup errors
       }
-      
+
       throw restoreError;
     }
   } catch (error) {
@@ -420,7 +420,9 @@ export async function listBackups(): Promise<StorageResult<string[]>> {
 
     const files = await fs.readdir(BACKUP_DIR);
     const backupFiles = files
-      .filter((file) => file.startsWith("claude_desktop_config_") && file.endsWith(".json") && !file.includes("_metadata"))
+      .filter(
+        (file) => file.startsWith("claude_desktop_config_") && file.endsWith(".json") && !file.includes("_metadata"),
+      )
       .sort()
       .reverse(); // Most recent first
 
@@ -465,18 +467,18 @@ export async function cleanupOldBackups(keepCount = 10): Promise<StorageResult<n
     for (const backupPath of backupsToDelete) {
       try {
         await fs.unlink(backupPath);
-        
+
         // Also delete corresponding metadata file
         const backupFilename = backupPath.split("/").pop() || "";
         const metadataFilename = generateBackupMetadataFilename(backupFilename);
         const metadataPath = join(BACKUP_DIR, metadataFilename);
-        
+
         try {
           await fs.unlink(metadataPath);
         } catch {
           // Ignore if metadata file doesn't exist
         }
-        
+
         deletedCount++;
       } catch (deleteError) {
         console.warn(`Failed to delete backup ${backupPath}:`, deleteError);
@@ -499,18 +501,20 @@ export async function cleanupOldBackups(keepCount = 10): Promise<StorageResult<n
 /**
  * Get configuration file status and permissions
  */
-export async function getConfigStatus(): Promise<StorageResult<{
-  exists: boolean;
-  readable: boolean;
-  writable: boolean;
-  directoryWritable: boolean;
-  size?: number;
-  lastModified?: Date;
-}>> {
+export async function getConfigStatus(): Promise<
+  StorageResult<{
+    exists: boolean;
+    readable: boolean;
+    writable: boolean;
+    directoryWritable: boolean;
+    size?: number;
+    lastModified?: Date;
+  }>
+> {
   try {
     const exists = await fileExists(CLAUDE_CONFIG_PATH);
     const directoryWritable = await isDirectoryWritable(CLAUDE_CONFIG_DIR);
-    
+
     let readable = false;
     let writable = false;
     let size: number | undefined;
@@ -519,7 +523,7 @@ export async function getConfigStatus(): Promise<StorageResult<{
     if (exists) {
       readable = await isFileReadable(CLAUDE_CONFIG_PATH);
       writable = await isFileWritable(CLAUDE_CONFIG_PATH);
-      
+
       try {
         const stats = await fs.stat(CLAUDE_CONFIG_PATH);
         size = stats.size;
