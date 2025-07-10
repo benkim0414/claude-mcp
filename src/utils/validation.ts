@@ -108,7 +108,7 @@ function isCommandSafe(command: string): ValidationIssue[] {
   
   // Check for dangerous commands
   const commandBase = command.split(/[\s\/]/).pop()?.toLowerCase() || "";
-  if (VALIDATION_CONFIG.DANGEROUS_COMMANDS.includes(commandBase)) {
+  if (VALIDATION_CONFIG.DANGEROUS_COMMANDS.includes(commandBase as any)) {
     issues.push(createIssue(
       ValidationSeverity.ERROR,
       "DANGEROUS_COMMAND",
@@ -272,7 +272,7 @@ function validateEnvironmentVariables(env: Record<string, string> | undefined): 
       ));
     }
 
-    if (VALIDATION_CONFIG.RESERVED_ENV_VARS.includes(key)) {
+    if (VALIDATION_CONFIG.RESERVED_ENV_VARS.includes(key as any)) {
       issues.push(createIssue(
         ValidationSeverity.WARNING,
         "RESERVED_ENV_VAR",

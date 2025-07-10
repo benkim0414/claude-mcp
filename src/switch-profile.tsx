@@ -46,7 +46,7 @@ export default function SwitchProfile() {
 
       setState({
         profiles: profilesResult.data || [],
-        activeProfileId: activeProfileResult.data,
+        activeProfileId: activeProfileResult.data ?? null,
         isLoading: false,
         error: null,
       });
@@ -110,11 +110,9 @@ export default function SwitchProfile() {
           message: `The profile has warnings: ${warningMessages}\n\nDo you want to continue switching?`,
           primaryAction: {
             title: "Continue",
-            style: Action.Style.Regular,
           },
           dismissAction: {
             title: "Cancel",
-            style: Action.Style.Cancel,
           },
         });
 
