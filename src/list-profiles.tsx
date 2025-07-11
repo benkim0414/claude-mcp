@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { List, ActionPanel, Action, Toast, showToast, Icon, Color, confirmAlert, open } from "@raycast/api";
 import { getProfileSummaries, getActiveProfile, deleteProfile } from "./utils/storage";
 import { ProfileSummary } from "./types";
+import EditProfileForm from "./components/EditProfileForm";
+import DeleteProfileDetail from "./components/DeleteProfileDetail";
 
 interface ListProfilesState {
   profiles: ProfileSummary[];
@@ -76,13 +78,6 @@ export default function ListProfiles() {
 
     // Open switch profile command
     await open(`raycast://extensions/benkim0414/claude-mcp/switch-profile`);
-  };
-
-  const handleEditProfile = async (profile: ProfileSummary) => {
-    // Open edit profile command with profile ID
-    await open(
-      `raycast://extensions/benkim0414/claude-mcp/edit-profile?arguments=${encodeURIComponent(JSON.stringify({ profileId: profile.id }))}`,
-    );
   };
 
   const handleCreateProfile = async () => {
@@ -250,15 +245,15 @@ export default function ListProfiles() {
                   />
                 </ActionPanel.Section>
                 <ActionPanel.Section>
-                  <Action
+                  <Action.Push
                     title="Edit Profile"
-                    onAction={() => handleEditProfile(profile)}
+                    target={<EditProfileForm profileId={profile.id} />}
                     icon={Icon.Pencil}
                     shortcut={{ modifiers: ["cmd"], key: "e" }}
                   />
-                  <Action
+                  <Action.Push
                     title="Delete Profile"
-                    onAction={() => handleDeleteProfile(profile)}
+                    target={<DeleteProfileDetail profileId={profile.id} />}
                     icon={Icon.Trash}
                     style={Action.Style.Destructive}
                     shortcut={{ modifiers: ["cmd", "shift"], key: "d" }}

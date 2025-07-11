@@ -6,20 +6,18 @@ import {
   showToast,
   Toast,
   useNavigation,
-  LaunchProps,
   confirmAlert,
   Icon,
   Color,
 } from "@raycast/api";
-import { getProfile, deleteProfile, getActiveProfile } from "./utils/storage";
-import { MCPProfile } from "./types";
+import { getProfile, deleteProfile, getActiveProfile } from "../utils/storage";
+import { MCPProfile } from "../types";
 
-interface DeleteProfileArguments {
+interface DeleteProfileDetailProps {
   profileId: string;
 }
 
-export default function DeleteProfile(props: LaunchProps<{ arguments: DeleteProfileArguments }>) {
-  const { profileId } = props.arguments;
+export default function DeleteProfileDetail({ profileId }: DeleteProfileDetailProps) {
   const { pop } = useNavigation();
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<MCPProfile | null>(null);

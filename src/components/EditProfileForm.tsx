@@ -1,25 +1,18 @@
 import { useState, useEffect } from "react";
-import { Form, ActionPanel, Action, showToast, Toast, useNavigation, LaunchProps } from "@raycast/api";
-import { getProfile, updateProfile } from "./utils/storage";
-import { UpdateProfileInput, MCPServerConfig, MCPProfile } from "./types";
+import { Form, ActionPanel, Action, showToast, Toast, useNavigation } from "@raycast/api";
+import { getProfile, updateProfile } from "../utils/storage";
+import { UpdateProfileInput, MCPServerConfig, MCPProfile } from "../types";
 
 interface MCPServerFormData extends MCPServerConfig {
   name: string;
   envVars: string; // JSON string representation of env vars
 }
 
-interface EditProfileFormData {
-  name: string;
-  description: string;
-  servers: MCPServerFormData[];
-}
-
-interface EditProfileArguments {
+interface EditProfileFormProps {
   profileId: string;
 }
 
-export default function EditProfile(props: LaunchProps<{ arguments: EditProfileArguments }>) {
-  const { profileId } = props.arguments;
+export default function EditProfileForm({ profileId }: EditProfileFormProps) {
   const { pop } = useNavigation();
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,7 +60,7 @@ export default function EditProfile(props: LaunchProps<{ arguments: EditProfileA
     }
   };
 
-  const handleSubmit = async (values: EditProfileFormData) => {
+  const handleSubmit = async (values: { name: string; description: string }) => {
     if (isSubmitting || !profile) return;
 
     try {
@@ -246,7 +239,7 @@ export default function EditProfile(props: LaunchProps<{ arguments: EditProfileA
           </ActionPanel.Section>
         </ActionPanel>
       }
-      navigationTitle={`Edit Profile: ${profile?.name || "Loading..."}`}
+      navigationTitle={`Edit Profile: ${profile.name}`}
     >
       <Form.TextField
         id="name"
