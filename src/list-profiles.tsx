@@ -75,19 +75,19 @@ export default function ListProfiles() {
     }
 
     // Open switch profile command
-    await open(`raycast://extensions/gunwoo-ben-kim/claude-mcp/switch-profile`);
+    await open(`raycast://extensions/benkim0414/claude-mcp/switch-profile`);
   };
 
   const handleEditProfile = async (profile: ProfileSummary) => {
     // Open edit profile command with profile ID
     await open(
-      `raycast://extensions/gunwoo-ben-kim/claude-mcp/edit-profile?arguments=${encodeURIComponent(JSON.stringify({ profileId: profile.id }))}`,
+      `raycast://extensions/benkim0414/claude-mcp/edit-profile?arguments=${encodeURIComponent(JSON.stringify({ profileId: profile.id }))}`,
     );
   };
 
   const handleCreateProfile = async () => {
     // Open create profile command
-    await open(`raycast://extensions/gunwoo-ben-kim/claude-mcp/create-profile`);
+    await open(`raycast://extensions/benkim0414/claude-mcp/create-profile`);
   };
 
   const handleDeleteProfile = async (profile: ProfileSummary) => {
