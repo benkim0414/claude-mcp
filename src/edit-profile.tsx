@@ -249,49 +249,54 @@ export default function EditProfile(props: LaunchProps<{ arguments: EditProfileA
 
       <Form.Separator />
 
-      {servers.map((server, index) => (
-        <div key={index}>
-          <Form.Description title={`MCP Server ${index + 1}`} text={`Configure MCP server ${index + 1}`} />
-
+      {servers
+        .map((server, index) => [
+          <Form.Description
+            key={`desc-${index}`}
+            title={`MCP Server ${index + 1}`}
+            text={`Configure MCP server ${index + 1}`}
+          />,
           <Form.TextField
+            key={`name-${index}`}
             id={`server-${index}-name`}
             title="Server Name"
             placeholder="e.g., filesystem, git, database"
             value={server.name}
             onChange={(value) => updateServer(index, "name", value)}
             info="Unique identifier for this MCP server"
-          />
-
+          />,
           <Form.TextField
+            key={`command-${index}`}
             id={`server-${index}-command`}
             title="Command"
             placeholder="e.g., npx, python, node"
             value={server.command}
             onChange={(value) => updateServer(index, "command", value)}
             info="Executable command to run the MCP server"
-          />
-
+          />,
           <Form.TextField
+            key={`args-${index}`}
             id={`server-${index}-args`}
             title="Arguments"
             placeholder="e.g., @modelcontextprotocol/server-filesystem /path/to/allowed/files"
             value={Array.isArray(server.args) ? server.args.join(" ") : server.args}
             onChange={(value) => updateServer(index, "args", value)}
             info="Command line arguments (space-separated, use quotes for arguments with spaces)"
-          />
-
+          />,
           <Form.TextArea
+            key={`env-${index}`}
             id={`server-${index}-env`}
             title="Environment Variables"
             placeholder='{"API_KEY": "your-key", "DEBUG": "true"}'
             value={server.envVars}
             onChange={(value) => updateServer(index, "envVars", value)}
             info="JSON object of environment variables (optional)"
-          />
-
-          {servers.length > 1 && <Form.Description title="" text={`Remove Server ${index + 1}`} />}
-        </div>
-      ))}
+          />,
+          ...(servers.length > 1
+            ? [<Form.Description key={`remove-${index}`} title="" text={`Remove Server ${index + 1}`} />]
+            : []),
+        ])
+        .flat()}
 
       <Form.Separator />
 
