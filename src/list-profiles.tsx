@@ -261,7 +261,7 @@ export default function ListProfiles() {
                     onAction={() => handleDeleteProfile(profile)}
                     icon={Icon.Trash}
                     style={Action.Style.Destructive}
-                    shortcut={{ modifiers: ["cmd"], key: "delete" }}
+                    shortcut={{ modifiers: ["cmd", "shift"], key: "d" }}
                   />
                 </ActionPanel.Section>
                 <ActionPanel.Section>

@@ -171,7 +171,7 @@ Please check that the profile exists and try again.`}
             onAction={handleDelete}
             style={Action.Style.Destructive}
             icon={Icon.Trash}
-            shortcut={{ modifiers: ["cmd"], key: "delete" }}
+            shortcut={{ modifiers: ["cmd", "shift"], key: "d" }}
           />
           <ActionPanel.Section>
             <Action
