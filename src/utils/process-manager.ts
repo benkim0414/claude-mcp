@@ -72,7 +72,19 @@ async function execWithTimeout(command: string, timeout: number): Promise<{ stdo
 export async function isClaudeRunning(): Promise<StorageResult<ProcessStatus>> {
   try {
     // Use pgrep to check for Claude process
+    console.log(`Checking for Claude process with: pgrep -f "${CLAUDE_APP_NAME}"`);
     const { stdout } = await execWithTimeout(`pgrep -f "${CLAUDE_APP_NAME}"`, PROCESS_CONFIG.CHECK_TIMEOUT);
+    console.log(`pgrep output: "${stdout.trim()}"`);
+
+    // Also get detailed process info for debugging
+    if (stdout.trim()) {
+      try {
+        const { stdout: psOutput } = await execWithTimeout(`ps aux | grep -i claude | grep -v grep`, PROCESS_CONFIG.CHECK_TIMEOUT);
+        console.log("Detailed Claude processes found:", psOutput);
+      } catch (psError) {
+        console.log("Could not get detailed process info:", psError);
+      }
+    }
 
     if (stdout.trim()) {
       const processIds = stdout
@@ -220,13 +232,15 @@ async function quitClaudeAppleScript(): Promise<ProcessOperationResult> {
 }
 
 /**
- * Force quit Claude Desktop using killall
+ * Force quit Claude Desktop using pkill (more reliable than killall)
  */
 async function forceQuitClaude(): Promise<ProcessOperationResult> {
   const startTime = Date.now();
 
   try {
-    await execWithTimeout(`killall "${CLAUDE_APP_NAME}"`, PROCESS_CONFIG.QUIT_TIMEOUT);
+    console.log(`Force quitting Claude with: pkill -f "${CLAUDE_APP_NAME}"`);
+    await execWithTimeout(`pkill -f "${CLAUDE_APP_NAME}"`, PROCESS_CONFIG.QUIT_TIMEOUT);
+    console.log("pkill command executed successfully");
 
     // Wait for process to be killed
     let attempts = 0;
@@ -234,7 +248,10 @@ async function forceQuitClaude(): Promise<ProcessOperationResult> {
 
     while (attempts < maxAttempts) {
       const statusResult = await isClaudeRunning();
+      console.log(`Force quit check attempt ${attempts + 1}/${maxAttempts}: Claude running status:`, statusResult);
+      
       if (statusResult.success && statusResult.data && !statusResult.data.isRunning) {
+        console.log("Claude Desktop force quit verified successfully");
         return {
           success: true,
           message: "Claude Desktop force quit successfully",
@@ -246,6 +263,7 @@ async function forceQuitClaude(): Promise<ProcessOperationResult> {
       attempts++;
     }
 
+    console.error("Claude Desktop did not quit after pkill within timeout");
     return {
       success: false,
       message: "Claude Desktop did not quit after force kill",
@@ -253,10 +271,14 @@ async function forceQuitClaude(): Promise<ProcessOperationResult> {
       timeElapsed: Date.now() - startTime,
     };
   } catch (error) {
-    // killall returns exit code 1 if no processes found, which might be fine
+    console.error("pkill command failed:", error);
+    // pkill returns exit code 1 if no processes found, which might be fine
     if (error instanceof Error && error.message.includes("Command failed")) {
       const statusResult = await isClaudeRunning();
+      console.log("pkill failed, checking if Claude is actually running:", statusResult);
+      
       if (statusResult.success && statusResult.data && !statusResult.data.isRunning) {
+        console.log("pkill failed but Claude is not running - assuming success");
         return {
           success: true,
           message: "Claude Desktop was not running",
@@ -371,17 +393,33 @@ export async function startClaude(): Promise<StorageResult<ProcessOperationResul
     }
 
     // Start Claude Desktop
-    await execWithTimeout(`open "${CLAUDE_APP_PATH}"`, PROCESS_CONFIG.START_TIMEOUT);
+    console.log(`Starting Claude Desktop with command: open "${CLAUDE_APP_PATH}"`);
+    try {
+      const openResult = await execWithTimeout(`open "${CLAUDE_APP_PATH}"`, PROCESS_CONFIG.START_TIMEOUT);
+      console.log("Open command executed successfully:", openResult);
+    } catch (openError) {
+      console.error("Failed to execute open command:", openError);
+      return {
+        success: false,
+        error: `Failed to launch Claude Desktop: ${openError instanceof Error ? openError.message : String(openError)}`,
+      };
+    }
 
     // Wait for process to start
     let attempts = 0;
     const maxAttempts = Math.floor(PROCESS_CONFIG.START_TIMEOUT / PROCESS_CONFIG.PROCESS_CHECK_INTERVAL);
+    console.log(
+      `Waiting for Claude to start... (max ${maxAttempts} attempts, checking every ${PROCESS_CONFIG.PROCESS_CHECK_INTERVAL}ms)`,
+    );
 
     while (attempts < maxAttempts) {
       await sleep(PROCESS_CONFIG.PROCESS_CHECK_INTERVAL);
 
       const statusResult = await isClaudeRunning();
+      console.log(`Attempt ${attempts + 1}/${maxAttempts}: Claude running status:`, statusResult);
+
       if (statusResult.success && statusResult.data && statusResult.data.isRunning) {
+        console.log("Claude Desktop started successfully!");
         return {
           success: true,
           data: {
@@ -395,9 +433,11 @@ export async function startClaude(): Promise<StorageResult<ProcessOperationResul
       attempts++;
     }
 
+    const finalError = `Claude Desktop did not start within timeout (${PROCESS_CONFIG.START_TIMEOUT}ms, ${maxAttempts} attempts)`;
+    console.error(finalError);
     return {
       success: false,
-      error: "Claude Desktop did not start within timeout",
+      error: finalError,
     };
   } catch (error) {
     return {
@@ -418,10 +458,13 @@ export async function restartClaude(): Promise<
   }>
 > {
   const startTime = Date.now();
+  console.log("Starting Claude Desktop restart process...");
 
   try {
     // First quit Claude
+    console.log("Step 1: Quitting Claude Desktop...");
     const quitResult = await quitClaude();
+    console.log("Quit result:", quitResult);
     if (!quitResult.success) {
       return {
         success: false,
@@ -429,11 +472,14 @@ export async function restartClaude(): Promise<
       };
     }
 
-    // Wait a moment before starting
-    await sleep(PROCESS_CONFIG.RETRY_DELAY);
+    // Wait longer for macOS to fully clean up the process before restarting
+    console.log("Waiting for process cleanup before restart...");
+    await sleep(PROCESS_CONFIG.RETRY_DELAY * 2); // 2 seconds instead of 1
 
     // Then start Claude
+    console.log("Step 3: Starting Claude Desktop...");
     const startResult = await startClaude();
+    console.log("Start result:", startResult);
     if (!startResult.success) {
       return {
         success: false,
@@ -442,6 +488,7 @@ export async function restartClaude(): Promise<
     }
 
     const totalTime = Date.now() - startTime;
+    console.log(`Claude Desktop restart completed successfully in ${totalTime}ms`);
 
     return {
       success: true,
