@@ -206,8 +206,25 @@ export default function EditProfile(props: LaunchProps<{ arguments: EditProfileA
     );
   }
 
+  // Don't render form until profile is loaded
+  if (!profile) {
+    return (
+      <Form
+        isLoading={isLoading}
+        actions={
+          <ActionPanel>
+            <Action title="Cancel" onAction={pop} />
+          </ActionPanel>
+        }
+      >
+        <Form.Description title="Loading" text="Loading profile data..." />
+      </Form>
+    );
+  }
+
   return (
     <Form
+      key={profile.id}
       isLoading={isLoading}
       actions={
         <ActionPanel>
@@ -235,7 +252,7 @@ export default function EditProfile(props: LaunchProps<{ arguments: EditProfileA
         id="name"
         title="Profile Name"
         placeholder="Enter profile name"
-        defaultValue={profile?.name}
+        defaultValue={profile.name}
         info="A unique name for this MCP profile"
       />
 
@@ -243,7 +260,7 @@ export default function EditProfile(props: LaunchProps<{ arguments: EditProfileA
         id="description"
         title="Description"
         placeholder="Optional description of this profile"
-        defaultValue={profile?.description || ""}
+        defaultValue={profile.description || ""}
         info="Brief description of what this profile is used for"
       />
 
