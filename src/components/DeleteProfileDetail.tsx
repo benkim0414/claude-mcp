@@ -5,9 +5,10 @@ import { MCPProfile } from "../types";
 
 interface DeleteProfileDetailProps {
   profileId: string;
+  onRefresh?: () => void;
 }
 
-export default function DeleteProfileDetail({ profileId }: DeleteProfileDetailProps) {
+export default function DeleteProfileDetail({ profileId, onRefresh }: DeleteProfileDetailProps) {
   const { pop } = useNavigation();
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<MCPProfile | null>(null);
@@ -84,6 +85,9 @@ export default function DeleteProfileDetail({ profileId }: DeleteProfileDetailPr
         title: "Profile deleted",
         message: `"${profile.name}" has been deleted`,
       });
+
+      // Refresh parent list before navigating back
+      onRefresh?.();
 
       // Navigate back to profiles list
       pop();

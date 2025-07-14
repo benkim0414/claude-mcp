@@ -10,9 +10,10 @@ interface MCPServerFormData extends MCPServerConfig {
 
 interface EditProfileFormProps {
   profileId: string;
+  onRefresh?: () => void;
 }
 
-export default function EditProfileForm({ profileId }: EditProfileFormProps) {
+export default function EditProfileForm({ profileId, onRefresh }: EditProfileFormProps) {
   const { pop } = useNavigation();
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -154,6 +155,9 @@ export default function EditProfileForm({ profileId }: EditProfileFormProps) {
         title: "Profile updated successfully",
         message: `"${values.name}" has been updated`,
       });
+
+      // Refresh parent list before navigating back
+      onRefresh?.();
 
       // Navigate back to profiles list
       pop();

@@ -207,13 +207,13 @@ export default function ListProfiles() {
                 <ActionPanel.Section>
                   <Action.Push
                     title="Edit Profile"
-                    target={<EditProfileForm profileId={profile.id} />}
+                    target={<EditProfileForm profileId={profile.id} onRefresh={loadProfiles} />}
                     icon={Icon.Pencil}
                     shortcut={{ modifiers: ["cmd"], key: "e" }}
                   />
                   <Action.Push
                     title="Delete Profile"
-                    target={<DeleteProfileDetail profileId={profile.id} />}
+                    target={<DeleteProfileDetail profileId={profile.id} onRefresh={loadProfiles} />}
                     icon={Icon.Trash}
                     style={Action.Style.Destructive}
                     shortcut={{ modifiers: ["cmd", "shift"], key: "d" }}
