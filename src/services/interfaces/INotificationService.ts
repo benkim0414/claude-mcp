@@ -6,7 +6,7 @@
 export enum NotificationStyle {
   Success = "success",
   Failure = "failure",
-  Animated = "animated"
+  Animated = "animated",
 }
 
 export interface NotificationOptions {

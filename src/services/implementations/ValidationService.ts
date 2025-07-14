@@ -4,12 +4,12 @@
  */
 
 import { MCPProfile, MCPServerConfig, MCPServersConfig } from "../../types";
-import { 
-  DetailedValidationResult, 
-  validateProfile, 
-  validateMCPServer, 
-  validateMCPServers, 
-  validateConfiguration 
+import {
+  DetailedValidationResult,
+  validateProfile,
+  validateMCPServer,
+  validateMCPServers,
+  validateConfiguration,
 } from "../../utils/validation";
 import { IValidationService } from "../interfaces/IValidationService";
 import { IProfileRepository } from "../interfaces/IProfileRepository";
@@ -36,16 +36,14 @@ export class ValidationService implements IValidationService {
   async isProfileNameAvailable(name: string, excludeId?: string): Promise<boolean> {
     try {
       const profilesResult = await this.profileRepository.getAllProfiles();
-      
+
       if (!profilesResult.success || !profilesResult.data) {
         // If we can't get profiles, assume name is available
         return true;
       }
 
       const profiles = profilesResult.data;
-      const existingProfile = profiles.find(p => 
-        p.name.toLowerCase() === name.toLowerCase() && p.id !== excludeId
-      );
+      const existingProfile = profiles.find((p) => p.name.toLowerCase() === name.toLowerCase() && p.id !== excludeId);
 
       return !existingProfile;
     } catch (error) {
@@ -58,7 +56,7 @@ export class ValidationService implements IValidationService {
   async validateProfileCreation(input: Partial<MCPProfile>): Promise<DetailedValidationResult> {
     // Validate the profile structure first
     const structuralValidation = await this.validateProfile(input);
-    
+
     // If structural validation fails, return early
     if (!structuralValidation.valid) {
       return structuralValidation;
@@ -74,7 +72,7 @@ export class ValidationService implements IValidationService {
         code: "MISSING_NAME",
         message: "Profile name is required for creation",
         field: "name",
-        value: input.name
+        value: input.name,
       });
     }
 
@@ -85,7 +83,7 @@ export class ValidationService implements IValidationService {
         code: "MISSING_MCP_SERVERS",
         message: "At least one MCP server must be configured",
         field: "mcpServers",
-        value: input.mcpServers
+        value: input.mcpServers,
       });
     }
 
@@ -98,21 +96,21 @@ export class ValidationService implements IValidationService {
           code: "DUPLICATE_NAME",
           message: `Profile with name "${input.name}" already exists`,
           field: "name",
-          value: input.name
+          value: input.name,
         });
       }
     }
 
     // Categorize issues
-    const errors = issues.filter(issue => issue.severity === "error");
-    const warnings = issues.filter(issue => issue.severity === "warning");
-    const info = issues.filter(issue => issue.severity === "info");
+    const errors = issues.filter((issue) => issue.severity === "error");
+    const warnings = issues.filter((issue) => issue.severity === "warning");
+    const info = issues.filter((issue) => issue.severity === "info");
 
     return {
       valid: errors.length === 0,
       errors,
       warnings,
-      info
+      info,
     };
   }
 
@@ -122,15 +120,17 @@ export class ValidationService implements IValidationService {
     if (!existingProfileResult.success || !existingProfileResult.data) {
       return {
         valid: false,
-        errors: [{
-          severity: "error" as const,
-          code: "PROFILE_NOT_FOUND",
-          message: `Profile with ID "${id}" not found`,
-          field: "id",
-          value: id
-        }],
+        errors: [
+          {
+            severity: "error" as const,
+            code: "PROFILE_NOT_FOUND",
+            message: `Profile with ID "${id}" not found`,
+            field: "id",
+            value: id,
+          },
+        ],
         warnings: [],
-        info: []
+        info: [],
       };
     }
 
@@ -141,12 +141,12 @@ export class ValidationService implements IValidationService {
       ...existingProfile,
       ...updates,
       id: existingProfile.id, // Ensure ID cannot be changed
-      createdAt: existingProfile.createdAt // Ensure creation date cannot be changed
+      createdAt: existingProfile.createdAt, // Ensure creation date cannot be changed
     };
 
     // Validate the merged profile
     const structuralValidation = await this.validateProfile(mergedProfile);
-    
+
     // Additional validation for updates
     const issues = [...structuralValidation.errors, ...structuralValidation.warnings, ...structuralValidation.info];
 
@@ -159,42 +159,42 @@ export class ValidationService implements IValidationService {
           code: "DUPLICATE_NAME",
           message: `Profile with name "${updates.name}" already exists`,
           field: "name",
-          value: updates.name
+          value: updates.name,
         });
       }
     }
 
     // Validate that ID and createdAt are not being changed
-    if ('id' in updates && updates.id !== existingProfile.id) {
+    if ("id" in updates && updates.id !== existingProfile.id) {
       issues.push({
         severity: "error" as const,
         code: "IMMUTABLE_FIELD",
         message: "Profile ID cannot be changed",
         field: "id",
-        value: updates.id
+        value: updates.id,
       });
     }
 
-    if ('createdAt' in updates && updates.createdAt !== existingProfile.createdAt) {
+    if ("createdAt" in updates && updates.createdAt !== existingProfile.createdAt) {
       issues.push({
         severity: "error" as const,
         code: "IMMUTABLE_FIELD",
         message: "Profile creation date cannot be changed",
         field: "createdAt",
-        value: updates.createdAt
+        value: updates.createdAt,
       });
     }
 
     // Categorize issues
-    const errors = issues.filter(issue => issue.severity === "error");
-    const warnings = issues.filter(issue => issue.severity === "warning");
-    const info = issues.filter(issue => issue.severity === "info");
+    const errors = issues.filter((issue) => issue.severity === "error");
+    const warnings = issues.filter((issue) => issue.severity === "warning");
+    const info = issues.filter((issue) => issue.severity === "info");
 
     return {
       valid: errors.length === 0,
       errors,
       warnings,
-      info
+      info,
     };
   }
 }

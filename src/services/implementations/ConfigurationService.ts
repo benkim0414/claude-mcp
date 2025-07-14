@@ -4,11 +4,7 @@
  */
 
 import { StorageResult } from "../../types";
-import { 
-  ClaudeDesktopConfig, 
-  ConfigStatus, 
-  IConfigurationService 
-} from "../interfaces/IConfigurationService";
+import { ClaudeDesktopConfig, ConfigStatus, IConfigurationService } from "../interfaces/IConfigurationService";
 import {
   readClaudeConfig,
   writeClaudeConfig,
@@ -16,7 +12,7 @@ import {
   restoreConfig,
   listBackups,
   cleanupOldBackups,
-  getConfigStatus
+  getConfigStatus,
 } from "../../utils/config-manager";
 
 export class ConfigurationService implements IConfigurationService {
@@ -26,12 +22,12 @@ export class ConfigurationService implements IConfigurationService {
       return {
         success: result.success,
         data: result.data,
-        error: result.error
+        error: result.error,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred"
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }
@@ -42,7 +38,7 @@ export class ConfigurationService implements IConfigurationService {
       if (!this.validateConfigurationStructure(config)) {
         return {
           success: false,
-          error: "Invalid configuration structure"
+          error: "Invalid configuration structure",
         };
       }
 
@@ -50,12 +46,12 @@ export class ConfigurationService implements IConfigurationService {
       return {
         success: result.success,
         data: result.data,
-        error: result.error
+        error: result.error,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred"
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }
@@ -66,12 +62,12 @@ export class ConfigurationService implements IConfigurationService {
       return {
         success: result.success,
         data: result.data,
-        error: result.error
+        error: result.error,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred"
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }
@@ -82,12 +78,12 @@ export class ConfigurationService implements IConfigurationService {
       return {
         success: result.success,
         data: result.data,
-        error: result.error
+        error: result.error,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred"
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }
@@ -98,12 +94,12 @@ export class ConfigurationService implements IConfigurationService {
       return {
         success: result.success,
         data: result.data,
-        error: result.error
+        error: result.error,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred"
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }
@@ -114,12 +110,12 @@ export class ConfigurationService implements IConfigurationService {
       return {
         success: result.success,
         data: result.data,
-        error: result.error
+        error: result.error,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred"
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }
@@ -130,12 +126,12 @@ export class ConfigurationService implements IConfigurationService {
       return {
         success: result.success,
         data: result.data,
-        error: result.error
+        error: result.error,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred"
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }
@@ -187,7 +183,7 @@ export class ConfigurationService implements IConfigurationService {
     }
 
     // Validate args array
-    if (!serverConfig.args.every(arg => typeof arg === "string")) {
+    if (!serverConfig.args.every((arg) => typeof arg === "string")) {
       return false;
     }
 
@@ -199,7 +195,7 @@ export class ConfigurationService implements IConfigurationService {
 
       // Validate env values
       const env = serverConfig.env as Record<string, unknown>;
-      if (!Object.values(env).every(value => typeof value === "string")) {
+      if (!Object.values(env).every((value) => typeof value === "string")) {
         return false;
       }
     }

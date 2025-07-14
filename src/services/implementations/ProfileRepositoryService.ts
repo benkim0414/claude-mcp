@@ -3,7 +3,14 @@
  * Provides abstraction layer following Dependency Inversion Principle
  */
 
-import { MCPProfile, CreateProfileInput, UpdateProfileInput, ProfileSummary, StorageResult, ProfileId } from "../../types";
+import {
+  MCPProfile,
+  CreateProfileInput,
+  UpdateProfileInput,
+  ProfileSummary,
+  StorageResult,
+  ProfileId,
+} from "../../types";
 import { IProfileRepository } from "../interfaces/IProfileRepository";
 import {
   saveProfile,
@@ -14,7 +21,7 @@ import {
   getProfileSummaries,
   clearAllProfiles,
   setActiveProfile,
-  getActiveProfile
+  getActiveProfile,
 } from "../../utils/storage";
 
 export class ProfileRepositoryService implements IProfileRepository {
@@ -24,7 +31,7 @@ export class ProfileRepositoryService implements IProfileRepository {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred"
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }
@@ -35,7 +42,7 @@ export class ProfileRepositoryService implements IProfileRepository {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred"
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }
@@ -46,7 +53,7 @@ export class ProfileRepositoryService implements IProfileRepository {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred"
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }
@@ -57,7 +64,7 @@ export class ProfileRepositoryService implements IProfileRepository {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred"
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }
@@ -68,7 +75,7 @@ export class ProfileRepositoryService implements IProfileRepository {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred"
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }
@@ -79,7 +86,7 @@ export class ProfileRepositoryService implements IProfileRepository {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred"
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }
@@ -90,7 +97,7 @@ export class ProfileRepositoryService implements IProfileRepository {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred"
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }
@@ -101,7 +108,7 @@ export class ProfileRepositoryService implements IProfileRepository {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred"
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }
@@ -112,7 +119,7 @@ export class ProfileRepositoryService implements IProfileRepository {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred"
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }

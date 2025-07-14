@@ -3,7 +3,14 @@
  * Abstracts storage operations for dependency inversion
  */
 
-import { MCPProfile, CreateProfileInput, UpdateProfileInput, ProfileSummary, StorageResult, ProfileId } from "../../types";
+import {
+  MCPProfile,
+  CreateProfileInput,
+  UpdateProfileInput,
+  ProfileSummary,
+  StorageResult,
+  ProfileId,
+} from "../../types";
 
 export interface IProfileRepository {
   /**

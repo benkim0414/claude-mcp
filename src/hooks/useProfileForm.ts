@@ -47,9 +47,9 @@ export interface UseProfileFormResult extends ProfileFormState, ProfileFormActio
  * Hook for managing profile form state and operations
  */
 export function useProfileForm(
-  mode: 'create' | 'edit' = 'create',
+  mode: "create" | "edit" = "create",
   profileId?: string,
-  onSuccess?: () => void
+  onSuccess?: () => void,
 ): UseProfileFormResult {
   const profileManager = useProfileManager();
   const validationService = useValidationService();
@@ -58,7 +58,7 @@ export function useProfileForm(
   const initialFormData: ProfileFormData = {
     name: "",
     description: "",
-    servers: [{ name: "", command: "", args: [], envVars: "" }]
+    servers: [{ name: "", command: "", args: [], envVars: "" }],
   };
 
   const [state, setState] = useState<ProfileFormState>({
@@ -67,57 +67,57 @@ export function useProfileForm(
     isSubmitting: false,
     error: null,
     validationResult: null,
-    isDirty: false
+    isDirty: false,
   });
 
   const [originalData, setOriginalData] = useState<ProfileFormData>(initialFormData);
 
   const updateField = useCallback((field: keyof ProfileFormData, value: any) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       formData: { ...prev.formData, [field]: value },
       isDirty: true,
-      error: null
+      error: null,
     }));
   }, []);
 
   const updateServer = useCallback((index: number, field: keyof MCPServerFormData, value: string | string[]) => {
-    setState(prev => {
+    setState((prev) => {
       const updatedServers = [...prev.formData.servers];
       updatedServers[index] = { ...updatedServers[index], [field]: value };
-      
+
       return {
         ...prev,
         formData: { ...prev.formData, servers: updatedServers },
         isDirty: true,
-        error: null
+        error: null,
       };
     });
   }, []);
 
   const addServer = useCallback(() => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       formData: {
         ...prev.formData,
-        servers: [...prev.formData.servers, { name: "", command: "", args: [], envVars: "" }]
+        servers: [...prev.formData.servers, { name: "", command: "", args: [], envVars: "" }],
       },
-      isDirty: true
+      isDirty: true,
     }));
   }, []);
 
   const removeServer = useCallback((index: number) => {
-    setState(prev => {
+    setState((prev) => {
       if (prev.formData.servers.length <= 1) {
         return prev; // Don't remove the last server
       }
 
       const updatedServers = prev.formData.servers.filter((_, i) => i !== index);
-      
+
       return {
         ...prev,
         formData: { ...prev.formData, servers: updatedServers },
-        isDirty: true
+        isDirty: true,
       };
     });
   }, []);
@@ -126,29 +126,32 @@ export function useProfileForm(
     try {
       // Convert form data to profile format for validation
       const profileData = await convertFormDataToProfile(state.formData);
-      
-      const validationResult = mode === 'create' 
-        ? await validationService.validateProfileCreation(profileData)
-        : await validationService.validateProfileUpdate(profileId!, profileData);
 
-      setState(prev => ({ ...prev, validationResult }));
-      
+      const validationResult =
+        mode === "create"
+          ? await validationService.validateProfileCreation(profileData)
+          : await validationService.validateProfileUpdate(profileId!, profileData);
+
+      setState((prev) => ({ ...prev, validationResult }));
+
       return validationResult;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Validation failed";
-      
+
       const validationResult: DetailedValidationResult = {
         valid: false,
-        errors: [{
-          severity: "error" as const,
-          code: "VALIDATION_ERROR",
-          message: errorMessage
-        }],
+        errors: [
+          {
+            severity: "error" as const,
+            code: "VALIDATION_ERROR",
+            message: errorMessage,
+          },
+        ],
         warnings: [],
-        info: []
+        info: [],
       };
 
-      setState(prev => ({ ...prev, validationResult }));
+      setState((prev) => ({ ...prev, validationResult }));
       return validationResult;
     }
   }, [state.formData, mode, profileId, validationService]);
@@ -157,12 +160,12 @@ export function useProfileForm(
     if (state.isSubmitting) return false;
 
     try {
-      setState(prev => ({ ...prev, isSubmitting: true, error: null }));
+      setState((prev) => ({ ...prev, isSubmitting: true, error: null }));
 
       // Validate form first
       const validationResult = await validateForm();
       if (!validationResult.valid) {
-        const errorMessages = validationResult.errors.map(e => e.message).join(", ");
+        const errorMessages = validationResult.errors.map((e) => e.message).join(", ");
         throw new Error(`Validation failed: ${errorMessages}`);
       }
 
@@ -170,7 +173,7 @@ export function useProfileForm(
       const profileData = await convertFormDataToProfile(state.formData);
 
       let result;
-      if (mode === 'create') {
+      if (mode === "create") {
         result = await profileManager.createProfile(profileData as CreateProfileInput);
       } else {
         result = await profileManager.updateProfile(profileId!, profileData as UpdateProfileInput);
@@ -181,82 +184,94 @@ export function useProfileForm(
       }
 
       // Reset dirty state and call success callback
-      setState(prev => ({ 
-        ...prev, 
-        isSubmitting: false, 
+      setState((prev) => ({
+        ...prev,
+        isSubmitting: false,
         isDirty: false,
-        error: null 
+        error: null,
       }));
-      
+
       setOriginalData(state.formData);
       onSuccess?.();
-      
+
       return true;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to save profile";
-      
-      setState(prev => ({
+
+      setState((prev) => ({
         ...prev,
         isSubmitting: false,
-        error: errorMessage
+        error: errorMessage,
       }));
 
       await notificationService.showError("Form submission failed", errorMessage);
       return false;
     }
-  }, [state.formData, state.isSubmitting, mode, profileId, profileManager, notificationService, validateForm, onSuccess]);
+  }, [
+    state.formData,
+    state.isSubmitting,
+    mode,
+    profileId,
+    profileManager,
+    notificationService,
+    validateForm,
+    onSuccess,
+  ]);
 
   const resetForm = useCallback(() => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       formData: originalData,
       isDirty: false,
       error: null,
-      validationResult: null
+      validationResult: null,
     }));
   }, [originalData]);
 
-  const loadProfile = useCallback(async (profileId: string) => {
-    try {
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
+  const loadProfile = useCallback(
+    async (profileId: string) => {
+      try {
+        setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-      const result = await profileManager.getProfile(profileId);
-      if (!result.success || !result.data) {
-        throw new Error(result.error || "Profile not found");
+        const result = await profileManager.getProfile(profileId);
+        if (!result.success || !result.data) {
+          throw new Error(result.error || "Profile not found");
+        }
+
+        const profile = result.data;
+        const formData = convertProfileToFormData(profile);
+
+        setState((prev) => ({
+          ...prev,
+          formData,
+          isLoading: false,
+          isDirty: false,
+          error: null,
+        }));
+
+        setOriginalData(formData);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to load profile";
+
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: errorMessage,
+        }));
+
+        await notificationService.showError("Failed to load profile", errorMessage);
       }
-
-      const profile = result.data;
-      const formData = convertProfileToFormData(profile);
-
-      setState(prev => ({
-        ...prev,
-        formData,
-        isLoading: false,
-        isDirty: false,
-        error: null
-      }));
-
-      setOriginalData(formData);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to load profile";
-      
-      setState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: errorMessage
-      }));
-
-      await notificationService.showError("Failed to load profile", errorMessage);
-    }
-  }, [profileManager, notificationService]);
+    },
+    [profileManager, notificationService],
+  );
 
   const clearError = useCallback(() => {
-    setState(prev => ({ ...prev, error: null }));
+    setState((prev) => ({ ...prev, error: null }));
   }, []);
 
   // Load profile on mount if in edit mode
   useEffect(() => {
-    if (mode === 'edit' && profileId) {
+    if (mode === "edit" && profileId) {
       loadProfile(profileId);
     }
   }, [mode, profileId, loadProfile]);
@@ -271,7 +286,7 @@ export function useProfileForm(
     submitForm,
     resetForm,
     loadProfile,
-    clearError
+    clearError,
   };
 }
 
@@ -299,27 +314,30 @@ async function convertFormDataToProfile(formData: ProfileFormData): Promise<Part
           throw new Error("Environment variables must be a valid JSON object");
         }
       } catch (error) {
-        throw new Error(`Invalid environment variables for server "${server.name}": ${error instanceof Error ? error.message : "Invalid JSON"}`);
+        throw new Error(
+          `Invalid environment variables for server "${server.name}": ${error instanceof Error ? error.message : "Invalid JSON"}`,
+        );
       }
     }
 
     // Parse args (split by whitespace, preserving quoted strings)
     const args = server.args || [];
-    const processedArgs = typeof args === "string"
-      ? args.match(/(?:[^\s"]+|"[^"]*")+/g)?.map(arg => arg.replace(/^"|"$/g, "")) || []
-      : args;
+    const processedArgs =
+      typeof args === "string"
+        ? args.match(/(?:[^\s"]+|"[^"]*")+/g)?.map((arg) => arg.replace(/^"|"$/g, "")) || []
+        : args;
 
     mcpServers[server.name] = {
       command: server.command,
       args: processedArgs,
-      env
+      env,
     };
   }
 
   return {
     name: formData.name.trim(),
     description: formData.description?.trim() || undefined,
-    mcpServers
+    mcpServers,
   };
 }
 
@@ -331,12 +349,12 @@ function convertProfileToFormData(profile: MCPProfile): ProfileFormData {
     name,
     command: config.command,
     args: config.args,
-    envVars: config.env ? JSON.stringify(config.env, null, 2) : ""
+    envVars: config.env ? JSON.stringify(config.env, null, 2) : "",
   }));
 
   return {
     name: profile.name,
     description: profile.description || "",
-    servers: servers.length > 0 ? servers : [{ name: "", command: "", args: [], envVars: "" }]
+    servers: servers.length > 0 ? servers : [{ name: "", command: "", args: [], envVars: "" }],
   };
 }

@@ -31,111 +31,114 @@ export interface UseProfileSwitchingResult extends ProfileSwitchingState, Profil
 export function useProfileSwitching(): UseProfileSwitchingResult {
   const profileManager = useProfileManager();
   const notificationService = useNotificationService();
-  
+
   const [state, setState] = useState<ProfileSwitchingState>({
     isLoading: false,
     isSwitching: false,
     switchingProfileId: null,
     lastSwitchResult: null,
-    error: null
+    error: null,
   });
 
-  const switchToProfile = useCallback(async (profile: ProfileSummary): Promise<ProfileSwitchResult> => {
-    try {
-      setState(prev => ({
-        ...prev,
-        isSwitching: true,
-        switchingProfileId: profile.id,
-        error: null,
-        lastSwitchResult: null
-      }));
+  const switchToProfile = useCallback(
+    async (profile: ProfileSummary): Promise<ProfileSwitchResult> => {
+      try {
+        setState((prev) => ({
+          ...prev,
+          isSwitching: true,
+          switchingProfileId: profile.id,
+          error: null,
+          lastSwitchResult: null,
+        }));
 
-      // Check if profile is already active
-      if (profile.isActive) {
-        await notificationService.showSuccess(`${profile.name} is already active`);
-        
-        const result: ProfileSwitchResult = {
-          success: false,
-          error: `${profile.name} is already active`
-        };
+        // Check if profile is already active
+        if (profile.isActive) {
+          await notificationService.showSuccess(`${profile.name} is already active`);
 
-        setState(prev => ({
+          const result: ProfileSwitchResult = {
+            success: false,
+            error: `${profile.name} is already active`,
+          };
+
+          setState((prev) => ({
+            ...prev,
+            isSwitching: false,
+            switchingProfileId: null,
+            lastSwitchResult: result,
+          }));
+
+          return result;
+        }
+
+        // Perform the actual switch
+        const result = await profileManager.switchToProfile(profile.id);
+
+        setState((prev) => ({
           ...prev,
           isSwitching: false,
           switchingProfileId: null,
-          lastSwitchResult: result
+          lastSwitchResult: result,
+          error: result.success ? null : result.error || "Unknown error occurred",
+        }));
+
+        return result;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+
+        const result: ProfileSwitchResult = {
+          success: false,
+          error: errorMessage,
+        };
+
+        setState((prev) => ({
+          ...prev,
+          isSwitching: false,
+          switchingProfileId: null,
+          lastSwitchResult: result,
+          error: errorMessage,
         }));
 
         return result;
       }
-
-      // Perform the actual switch
-      const result = await profileManager.switchToProfile(profile.id);
-
-      setState(prev => ({
-        ...prev,
-        isSwitching: false,
-        switchingProfileId: null,
-        lastSwitchResult: result,
-        error: result.success ? null : result.error || "Unknown error occurred"
-      }));
-
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-      
-      const result: ProfileSwitchResult = {
-        success: false,
-        error: errorMessage
-      };
-
-      setState(prev => ({
-        ...prev,
-        isSwitching: false,
-        switchingProfileId: null,
-        lastSwitchResult: result,
-        error: errorMessage
-      }));
-
-      return result;
-    }
-  }, [profileManager, notificationService]);
+    },
+    [profileManager, notificationService],
+  );
 
   const clearError = useCallback(() => {
-    setState(prev => ({ ...prev, error: null }));
+    setState((prev) => ({ ...prev, error: null }));
   }, []);
 
   const clearLastResult = useCallback(() => {
-    setState(prev => ({ ...prev, lastSwitchResult: null }));
+    setState((prev) => ({ ...prev, lastSwitchResult: null }));
   }, []);
 
   const checkSystemRequirements = useCallback(async (): Promise<boolean> => {
     try {
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       const result = await profileManager.checkSystemRequirements();
-      
-      setState(prev => ({ 
-        ...prev, 
+
+      setState((prev) => ({
+        ...prev,
         isLoading: false,
-        error: result.success ? null : result.error || "System requirements check failed"
+        error: result.success ? null : result.error || "System requirements check failed",
       }));
 
       if (!result.success) {
         await notificationService.showError(
           "System Requirements Check Failed",
-          result.error || "Claude Desktop may not be properly installed"
+          result.error || "Claude Desktop may not be properly installed",
         );
       }
 
       return result.success && result.data === true;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-      
-      setState(prev => ({ 
-        ...prev, 
+
+      setState((prev) => ({
+        ...prev,
         isLoading: false,
-        error: errorMessage
+        error: errorMessage,
       }));
 
       await notificationService.showError("System Check Error", errorMessage);
@@ -148,7 +151,7 @@ export function useProfileSwitching(): UseProfileSwitchingResult {
     switchToProfile,
     clearError,
     clearLastResult,
-    checkSystemRequirements
+    checkSystemRequirements,
   };
 }
 
@@ -157,7 +160,7 @@ export function useProfileSwitching(): UseProfileSwitchingResult {
  */
 export function useProfileSwitchValidation() {
   const profileManager = useProfileManager();
-  
+
   const [validationState, setValidationState] = useState<{
     isValidating: boolean;
     validationResult: any | null;
@@ -165,54 +168,57 @@ export function useProfileSwitchValidation() {
   }>({
     isValidating: false,
     validationResult: null,
-    error: null
+    error: null,
   });
 
-  const validateProfileForSwitch = useCallback(async (profileId: string) => {
-    try {
-      setValidationState(prev => ({ ...prev, isValidating: true, error: null }));
+  const validateProfileForSwitch = useCallback(
+    async (profileId: string) => {
+      try {
+        setValidationState((prev) => ({ ...prev, isValidating: true, error: null }));
 
-      // Get the profile
-      const profileResult = await profileManager.getProfile(profileId);
-      if (!profileResult.success || !profileResult.data) {
-        throw new Error(profileResult.error || "Profile not found");
+        // Get the profile
+        const profileResult = await profileManager.getProfile(profileId);
+        if (!profileResult.success || !profileResult.data) {
+          throw new Error(profileResult.error || "Profile not found");
+        }
+
+        // Validate the profile
+        const validationResult = await profileManager.validateProfile(profileResult.data);
+
+        setValidationState({
+          isValidating: false,
+          validationResult,
+          error: null,
+        });
+
+        return validationResult;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Validation failed";
+
+        setValidationState({
+          isValidating: false,
+          validationResult: null,
+          error: errorMessage,
+        });
+
+        return null;
       }
-
-      // Validate the profile
-      const validationResult = await profileManager.validateProfile(profileResult.data);
-
-      setValidationState({
-        isValidating: false,
-        validationResult,
-        error: null
-      });
-
-      return validationResult;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Validation failed";
-      
-      setValidationState({
-        isValidating: false,
-        validationResult: null,
-        error: errorMessage
-      });
-
-      return null;
-    }
-  }, [profileManager]);
+    },
+    [profileManager],
+  );
 
   const clearValidation = useCallback(() => {
     setValidationState({
       isValidating: false,
       validationResult: null,
-      error: null
+      error: null,
     });
   }, []);
 
   return {
     ...validationState,
     validateProfileForSwitch,
-    clearValidation
+    clearValidation,
   };
 }
 
@@ -221,7 +227,7 @@ export function useProfileSwitchValidation() {
  */
 export function useSystemStatus() {
   const profileManager = useProfileManager();
-  
+
   const [systemStatus, setSystemStatus] = useState<{
     isLoading: boolean;
     status: any | null;
@@ -229,40 +235,40 @@ export function useSystemStatus() {
   }>({
     isLoading: false,
     status: null,
-    error: null
+    error: null,
   });
 
   const checkSystemStatus = useCallback(async () => {
     try {
-      setSystemStatus(prev => ({ ...prev, isLoading: true, error: null }));
+      setSystemStatus((prev) => ({ ...prev, isLoading: true, error: null }));
 
       const result = await profileManager.getSystemStatus();
-      
+
       setSystemStatus({
         isLoading: false,
         status: result.success ? result.data : null,
-        error: result.success ? null : result.error || "Failed to get system status"
+        error: result.success ? null : result.error || "Failed to get system status",
       });
 
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-      
+
       setSystemStatus({
         isLoading: false,
         status: null,
-        error: errorMessage
+        error: errorMessage,
       });
 
       return {
         success: false,
-        error: errorMessage
+        error: errorMessage,
       };
     }
   }, [profileManager]);
 
   return {
     ...systemStatus,
-    checkSystemStatus
+    checkSystemStatus,
   };
 }

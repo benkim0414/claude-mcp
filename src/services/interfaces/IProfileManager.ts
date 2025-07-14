@@ -3,7 +3,14 @@
  * Coordinates between repository, validation, and configuration services
  */
 
-import { MCPProfile, CreateProfileInput, UpdateProfileInput, ProfileSummary, StorageResult, ProfileId } from "../../types";
+import {
+  MCPProfile,
+  CreateProfileInput,
+  UpdateProfileInput,
+  ProfileSummary,
+  StorageResult,
+  ProfileId,
+} from "../../types";
 import { DetailedValidationResult } from "../../utils/validation";
 
 export interface ProfileSwitchResult {
@@ -67,11 +74,13 @@ export interface IProfileManager {
   /**
    * Get system status including configuration and profile information
    */
-  getSystemStatus(): Promise<StorageResult<{
-    claudeInstalled: boolean;
-    configExists: boolean;
-    configWritable: boolean;
-    activeProfile: ProfileId | null;
-    totalProfiles: number;
-  }>>;
+  getSystemStatus(): Promise<
+    StorageResult<{
+      claudeInstalled: boolean;
+      configExists: boolean;
+      configWritable: boolean;
+      activeProfile: ProfileId | null;
+      totalProfiles: number;
+    }>
+  >;
 }

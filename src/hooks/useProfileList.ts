@@ -27,22 +27,22 @@ export interface UseProfileListResult extends ProfileListState, ProfileListActio
  */
 export function useProfileList(): UseProfileListResult {
   const profileManager = useProfileManager();
-  
+
   const [state, setState] = useState<ProfileListState>({
     profiles: [],
     activeProfileId: null,
     isLoading: true,
-    error: null
+    error: null,
   });
 
   const loadProfiles = useCallback(async () => {
     try {
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       // Load profiles and active profile in parallel
       const [profilesResult, activeProfileResult] = await Promise.all([
         profileManager.getProfileSummaries(),
-        profileManager.getActiveProfile()
+        profileManager.getActiveProfile(),
       ]);
 
       if (!profilesResult.success) {
@@ -54,23 +54,23 @@ export function useProfileList(): UseProfileListResult {
       }
 
       // Update profiles with active status
-      const profiles = (profilesResult.data || []).map(profile => ({
+      const profiles = (profilesResult.data || []).map((profile) => ({
         ...profile,
-        isActive: profile.id === activeProfileResult.data
+        isActive: profile.id === activeProfileResult.data,
       }));
 
       setState({
         profiles,
         activeProfileId: activeProfileResult.data ?? null,
         isLoading: false,
-        error: null
+        error: null,
       });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to load profiles";
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isLoading: false,
-        error: errorMessage
+        error: errorMessage,
       }));
     }
   }, [profileManager]);
@@ -80,7 +80,7 @@ export function useProfileList(): UseProfileListResult {
   }, [loadProfiles]);
 
   const clearError = useCallback(() => {
-    setState(prev => ({ ...prev, error: null }));
+    setState((prev) => ({ ...prev, error: null }));
   }, []);
 
   // Load profiles on mount
@@ -92,7 +92,7 @@ export function useProfileList(): UseProfileListResult {
     ...state,
     loadProfiles,
     refreshProfiles,
-    clearError
+    clearError,
   };
 }
 
@@ -110,9 +110,8 @@ export function useProfileFilter(profiles: ProfileSummary[]) {
     }
 
     const query = searchQuery.toLowerCase();
-    const filtered = profiles.filter(profile => 
-      profile.name.toLowerCase().includes(query) ||
-      (profile.description?.toLowerCase().includes(query))
+    const filtered = profiles.filter(
+      (profile) => profile.name.toLowerCase().includes(query) || profile.description?.toLowerCase().includes(query),
     );
 
     setFilteredProfiles(filtered);
@@ -121,7 +120,7 @@ export function useProfileFilter(profiles: ProfileSummary[]) {
   return {
     searchQuery,
     setSearchQuery,
-    filteredProfiles
+    filteredProfiles,
   };
 }
 
@@ -129,8 +128,8 @@ export function useProfileFilter(profiles: ProfileSummary[]) {
  * Hook for profile sorting functionality
  */
 export function useProfileSort(profiles: ProfileSummary[]) {
-  const [sortBy, setSortBy] = useState<'name' | 'created' | 'lastUsed' | 'serverCount'>('name');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [sortBy, setSortBy] = useState<"name" | "created" | "lastUsed" | "serverCount">("name");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [sortedProfiles, setSortedProfiles] = useState<ProfileSummary[]>(profiles);
 
   useEffect(() => {
@@ -138,36 +137,39 @@ export function useProfileSort(profiles: ProfileSummary[]) {
       let comparison = 0;
 
       switch (sortBy) {
-        case 'name':
+        case "name":
           comparison = a.name.localeCompare(b.name);
           break;
-        case 'created':
+        case "created":
           comparison = a.createdAt.getTime() - b.createdAt.getTime();
           break;
-        case 'lastUsed':
+        case "lastUsed":
           const aLastUsed = a.lastUsed?.getTime() || 0;
           const bLastUsed = b.lastUsed?.getTime() || 0;
           comparison = aLastUsed - bLastUsed;
           break;
-        case 'serverCount':
+        case "serverCount":
           comparison = a.serverCount - b.serverCount;
           break;
       }
 
-      return sortOrder === 'asc' ? comparison : -comparison;
+      return sortOrder === "asc" ? comparison : -comparison;
     });
 
     setSortedProfiles(sorted);
   }, [profiles, sortBy, sortOrder]);
 
-  const toggleSort = useCallback((field: typeof sortBy) => {
-    if (sortBy === field) {
-      setSortOrder(order => order === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(field);
-      setSortOrder('asc');
-    }
-  }, [sortBy]);
+  const toggleSort = useCallback(
+    (field: typeof sortBy) => {
+      if (sortBy === field) {
+        setSortOrder((order) => (order === "asc" ? "desc" : "asc"));
+      } else {
+        setSortBy(field);
+        setSortOrder("asc");
+      }
+    },
+    [sortBy],
+  );
 
   return {
     sortBy,
@@ -175,6 +177,6 @@ export function useProfileSort(profiles: ProfileSummary[]) {
     sortedProfiles,
     toggleSort,
     setSortBy,
-    setSortOrder
+    setSortOrder,
   };
 }

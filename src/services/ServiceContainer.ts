@@ -52,12 +52,12 @@ export class ServiceFactory {
     const configurationService = new ConfigurationService();
     const notificationService = new NotificationService();
     const validationService = new ValidationService(profileRepository);
-    
+
     const profileManager = new ProfileService(
       profileRepository,
       validationService,
       configurationService,
-      notificationService
+      notificationService,
     );
 
     this.services = {
@@ -65,7 +65,7 @@ export class ServiceFactory {
       validationService,
       configurationService,
       notificationService,
-      profileManager
+      profileManager,
     };
 
     return this.services;

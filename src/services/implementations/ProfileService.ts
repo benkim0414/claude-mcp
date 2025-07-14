@@ -18,19 +18,19 @@ export class ProfileService implements IProfileManager {
     private readonly repository: IProfileRepository,
     private readonly validationService: IValidationService,
     private readonly configService: IConfigurationService,
-    private readonly notificationService: INotificationService
+    private readonly notificationService: INotificationService,
   ) {}
 
   async createProfile(input: CreateProfileInput): Promise<StorageResult<MCPProfile>> {
     try {
       // Validate profile creation input
       const validationResult = await this.validationService.validateProfileCreation(input);
-      
+
       if (!validationResult.valid) {
-        const errorMessages = validationResult.errors.map(e => e.message).join(", ");
+        const errorMessages = validationResult.errors.map((e) => e.message).join(", ");
         return {
           success: false,
-          error: `Validation failed: ${errorMessages}`
+          error: `Validation failed: ${errorMessages}`,
         };
       }
 
@@ -39,28 +39,25 @@ export class ProfileService implements IProfileManager {
       if (!nameAvailable) {
         return {
           success: false,
-          error: `Profile with name "${input.name}" already exists`
+          error: `Profile with name "${input.name}" already exists`,
         };
       }
 
       // Save profile
       const result = await this.repository.saveProfile(input);
-      
+
       if (result.success) {
-        await this.notificationService.showSuccess(
-          "Profile created successfully",
-          `"${input.name}" has been created`
-        );
+        await this.notificationService.showSuccess("Profile created successfully", `"${input.name}" has been created`);
       }
 
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
       await this.notificationService.showError("Failed to create profile", errorMessage);
-      
+
       return {
         success: false,
-        error: errorMessage
+        error: errorMessage,
       };
     }
   }
@@ -69,12 +66,12 @@ export class ProfileService implements IProfileManager {
     try {
       // Validate profile update input
       const validationResult = await this.validationService.validateProfileUpdate(id, updates);
-      
+
       if (!validationResult.valid) {
-        const errorMessages = validationResult.errors.map(e => e.message).join(", ");
+        const errorMessages = validationResult.errors.map((e) => e.message).join(", ");
         return {
           success: false,
-          error: `Validation failed: ${errorMessages}`
+          error: `Validation failed: ${errorMessages}`,
         };
       }
 
@@ -84,18 +81,18 @@ export class ProfileService implements IProfileManager {
         if (!nameAvailable) {
           return {
             success: false,
-            error: `Profile with name "${updates.name}" already exists`
+            error: `Profile with name "${updates.name}" already exists`,
           };
         }
       }
 
       // Update profile
       const result = await this.repository.updateProfile(id, updates);
-      
+
       if (result.success) {
         await this.notificationService.showSuccess(
           "Profile updated successfully",
-          `"${result.data?.name}" has been updated`
+          `"${result.data?.name}" has been updated`,
         );
       }
 
@@ -103,10 +100,10 @@ export class ProfileService implements IProfileManager {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
       await this.notificationService.showError("Failed to update profile", errorMessage);
-      
+
       return {
         success: false,
-        error: errorMessage
+        error: errorMessage,
       };
     }
   }
@@ -118,22 +115,19 @@ export class ProfileService implements IProfileManager {
       const profileName = profileResult.data?.name || id;
 
       const result = await this.repository.deleteProfile(id);
-      
+
       if (result.success) {
-        await this.notificationService.showSuccess(
-          "Profile deleted successfully",
-          `"${profileName}" has been deleted`
-        );
+        await this.notificationService.showSuccess("Profile deleted successfully", `"${profileName}" has been deleted`);
       }
 
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
       await this.notificationService.showError("Failed to delete profile", errorMessage);
-      
+
       return {
         success: false,
-        error: errorMessage
+        error: errorMessage,
       };
     }
   }
@@ -152,14 +146,14 @@ export class ProfileService implements IProfileManager {
 
   async switchToProfile(profileId: ProfileId): Promise<ProfileSwitchResult> {
     const startTime = Date.now();
-    
+
     try {
       // Check if Claude Desktop is installed
       const installedResult = await isClaudeInstalled();
       if (!installedResult.success || !installedResult.data) {
         return {
           success: false,
-          error: "Claude Desktop is not installed at /Applications/Claude.app"
+          error: "Claude Desktop is not installed at /Applications/Claude.app",
         };
       }
 
@@ -168,7 +162,7 @@ export class ProfileService implements IProfileManager {
       if (!profileResult.success || !profileResult.data) {
         return {
           success: false,
-          error: profileResult.error || "Profile not found"
+          error: profileResult.error || "Profile not found",
         };
       }
 
@@ -177,27 +171,27 @@ export class ProfileService implements IProfileManager {
       // Validate profile configuration
       const validationResult = await this.validationService.validateProfile(profile);
       if (!validationResult.valid) {
-        const errorMessages = validationResult.errors.map(e => e.message).join(", ");
+        const errorMessages = validationResult.errors.map((e) => e.message).join(", ");
         return {
           success: false,
-          error: `Profile validation failed: ${errorMessages}`
+          error: `Profile validation failed: ${errorMessages}`,
         };
       }
 
       // Show warnings if any
       if (validationResult.warnings.length > 0) {
-        const warningMessages = validationResult.warnings.map(w => w.message).join(", ");
+        const warningMessages = validationResult.warnings.map((w) => w.message).join(", ");
         const shouldContinue = await this.notificationService.showConfirmation({
           title: "Profile has warnings",
           message: `The profile has warnings: ${warningMessages}\n\nDo you want to continue switching?`,
           primaryAction: { title: "Continue" },
-          dismissAction: { title: "Cancel" }
+          dismissAction: { title: "Cancel" },
         });
 
         if (!shouldContinue) {
           return {
             success: false,
-            error: "Profile switch cancelled by user"
+            error: "Profile switch cancelled by user",
           };
         }
       }
@@ -207,7 +201,7 @@ export class ProfileService implements IProfileManager {
       if (activeProfileResult.success && activeProfileResult.data === profileId) {
         return {
           success: false,
-          error: `${profile.name} is already active`
+          error: `${profile.name} is already active`,
         };
       }
 
@@ -216,7 +210,7 @@ export class ProfileService implements IProfileManager {
       if (!backupResult.success) {
         return {
           success: false,
-          error: `Failed to create backup: ${backupResult.error}`
+          error: `Failed to create backup: ${backupResult.error}`,
         };
       }
 
@@ -227,7 +221,7 @@ export class ProfileService implements IProfileManager {
       if (!currentConfigResult.success) {
         return {
           success: false,
-          error: `Failed to read current config: ${currentConfigResult.error}`
+          error: `Failed to read current config: ${currentConfigResult.error}`,
         };
       }
 
@@ -236,7 +230,7 @@ export class ProfileService implements IProfileManager {
       // Create new configuration with profile's MCP servers
       const newConfig = {
         ...currentConfig,
-        mcpServers: profile.mcpServers
+        mcpServers: profile.mcpServers,
       };
 
       // Write new configuration
@@ -244,7 +238,7 @@ export class ProfileService implements IProfileManager {
       if (!writeResult.success) {
         return {
           success: false,
-          error: `Failed to write configuration: ${writeResult.error}`
+          error: `Failed to write configuration: ${writeResult.error}`,
         };
       }
 
@@ -262,12 +256,12 @@ export class ProfileService implements IProfileManager {
           await this.configService.restoreConfiguration(backupPath);
           return {
             success: false,
-            error: `Failed to restart Claude Desktop: ${restartResult.error}. Configuration has been restored from backup.`
+            error: `Failed to restart Claude Desktop: ${restartResult.error}. Configuration has been restored from backup.`,
           };
         } catch (restoreError) {
           return {
             success: false,
-            error: `Failed to restart Claude Desktop: ${restartResult.error}. CRITICAL: Failed to restore backup.`
+            error: `Failed to restart Claude Desktop: ${restartResult.error}. CRITICAL: Failed to restore backup.`,
           };
         }
       }
@@ -276,22 +270,21 @@ export class ProfileService implements IProfileManager {
 
       await this.notificationService.showSuccess(
         `Switched to ${profile.name}`,
-        `Claude Desktop restarted in ${Math.round(restartResult.data!.totalTime / 1000)}s`
+        `Claude Desktop restarted in ${Math.round(restartResult.data!.totalTime / 1000)}s`,
       );
 
       return {
         success: true,
         totalTime,
-        backupPath
+        backupPath,
       };
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
       await this.notificationService.showError("Failed to switch profile", errorMessage);
-      
+
       return {
         success: false,
-        error: errorMessage
+        error: errorMessage,
       };
     }
   }
@@ -311,24 +304,26 @@ export class ProfileService implements IProfileManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred"
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }
 
-  async getSystemStatus(): Promise<StorageResult<{
-    claudeInstalled: boolean;
-    configExists: boolean;
-    configWritable: boolean;
-    activeProfile: ProfileId | null;
-    totalProfiles: number;
-  }>> {
+  async getSystemStatus(): Promise<
+    StorageResult<{
+      claudeInstalled: boolean;
+      configExists: boolean;
+      configWritable: boolean;
+      activeProfile: ProfileId | null;
+      totalProfiles: number;
+    }>
+  > {
     try {
       const [claudeResult, configStatusResult, activeProfileResult, profilesResult] = await Promise.all([
         isClaudeInstalled(),
         this.configService.getConfigurationStatus(),
         this.repository.getActiveProfile(),
-        this.repository.getAllProfiles()
+        this.repository.getAllProfiles(),
       ]);
 
       return {
@@ -338,13 +333,13 @@ export class ProfileService implements IProfileManager {
           configExists: configStatusResult.success && configStatusResult.data.exists,
           configWritable: configStatusResult.success && configStatusResult.data.writable,
           activeProfile: activeProfileResult.success ? activeProfileResult.data : null,
-          totalProfiles: profilesResult.success ? (profilesResult.data?.length || 0) : 0
-        }
+          totalProfiles: profilesResult.success ? profilesResult.data?.length || 0 : 0,
+        },
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred"
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }

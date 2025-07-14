@@ -25,11 +25,7 @@ interface ServiceProviderProps {
 export function ServiceProvider({ children, services }: ServiceProviderProps) {
   const serviceContainer = services || ServiceContainer.getServices();
 
-  return (
-    <ServiceContext.Provider value={serviceContainer}>
-      {children}
-    </ServiceContext.Provider>
-  );
+  return <ServiceContext.Provider value={serviceContainer}>{children}</ServiceContext.Provider>;
 }
 
 /**
@@ -37,11 +33,11 @@ export function ServiceProvider({ children, services }: ServiceProviderProps) {
  */
 export function useServices(): IServiceContainer {
   const services = useContext(ServiceContext);
-  
+
   if (!services) {
     throw new Error("useServices must be used within a ServiceProvider");
   }
-  
+
   return services;
 }
 

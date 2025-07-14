@@ -4,11 +4,11 @@
  */
 
 import { Toast, showToast, confirmAlert } from "@raycast/api";
-import { 
-  INotificationService, 
-  NotificationOptions, 
-  NotificationStyle, 
-  ConfirmationOptions 
+import {
+  INotificationService,
+  NotificationOptions,
+  NotificationStyle,
+  ConfirmationOptions,
 } from "../interfaces/INotificationService";
 
 export class NotificationService implements INotificationService {
@@ -17,17 +17,17 @@ export class NotificationService implements INotificationService {
   async showToast(options: NotificationOptions): Promise<void> {
     try {
       const raycastStyle = this.mapNotificationStyleToRaycast(options.style);
-      
+
       const toast = await showToast({
         style: raycastStyle,
         title: options.title,
-        message: options.message
+        message: options.message,
       });
 
       // Store toast reference for potential updates
       const toastId = this.generateToastId();
       this.toastMap.set(toastId, toast);
-      
+
       // Clean up after 10 seconds
       setTimeout(() => {
         this.toastMap.delete(toastId);
@@ -43,7 +43,7 @@ export class NotificationService implements INotificationService {
     await this.showToast({
       style: NotificationStyle.Success,
       title,
-      message
+      message,
     });
   }
 
@@ -51,7 +51,7 @@ export class NotificationService implements INotificationService {
     await this.showToast({
       style: NotificationStyle.Failure,
       title,
-      message
+      message,
     });
   }
 
@@ -59,7 +59,7 @@ export class NotificationService implements INotificationService {
     await this.showToast({
       style: NotificationStyle.Animated,
       title,
-      message
+      message,
     });
   }
 
@@ -69,11 +69,11 @@ export class NotificationService implements INotificationService {
         title: options.title,
         message: options.message,
         primaryAction: {
-          title: options.primaryAction.title
+          title: options.primaryAction.title,
         },
         dismissAction: {
-          title: options.dismissAction.title
-        }
+          title: options.dismissAction.title,
+        },
       });
 
       return result;

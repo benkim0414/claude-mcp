@@ -4,7 +4,12 @@
  */
 
 import { MCPProfile, ProfileSummary, StorageResult, ProfileId } from "../../types";
-import { CreateProfileInput, UpdateProfileInput, ProfileMetadata, ProfileConfiguration } from "../../types/profile-types";
+import {
+  CreateProfileInput,
+  UpdateProfileInput,
+  ProfileMetadata,
+  ProfileConfiguration,
+} from "../../types/profile-types";
 
 /**
  * Read-only profile operations
@@ -59,11 +64,13 @@ export interface IProfileLifecycleManager {
  */
 export interface IProfileUsageTracker {
   recordUsage(id: ProfileId): Promise<void>;
-  getUsageStatistics(id: ProfileId): Promise<StorageResult<{
-    usageCount: number;
-    lastUsed?: Date;
-    averageSessionLength?: number;
-  }>>;
+  getUsageStatistics(id: ProfileId): Promise<
+    StorageResult<{
+      usageCount: number;
+      lastUsed?: Date;
+      averageSessionLength?: number;
+    }>
+  >;
   clearUsageHistory(id: ProfileId): Promise<StorageResult<boolean>>;
 }
 
@@ -81,7 +88,11 @@ export interface IProfileSearcher {
     lastUsedAfter?: Date;
     isActive?: boolean;
   }): Promise<StorageResult<ProfileSummary[]>>;
-  sortProfiles(profiles: ProfileSummary[], sortBy: 'name' | 'created' | 'lastUsed' | 'serverCount', order: 'asc' | 'desc'): ProfileSummary[];
+  sortProfiles(
+    profiles: ProfileSummary[],
+    sortBy: "name" | "created" | "lastUsed" | "serverCount",
+    order: "asc" | "desc",
+  ): ProfileSummary[];
 }
 
 /**

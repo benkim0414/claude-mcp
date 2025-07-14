@@ -6,20 +6,19 @@
 import React from "react";
 import { List, ActionPanel, Action, Icon, Color } from "@raycast/api";
 import { ProfileSummary } from "../../types/profile-types";
+import ProfileDetailView from "../ProfileDetailView";
 import EditProfileForm from "../EditProfileForm";
 import DeleteProfileDetail from "../DeleteProfileDetail";
 
 export interface ProfileListViewProps {
   profiles: ProfileSummary[];
-  activeProfileId: string | null;
   isLoading: boolean;
   error: string | null;
   searchQuery: string;
-  sortBy: 'name' | 'created' | 'lastUsed' | 'serverCount';
-  sortOrder: 'asc' | 'desc';
+  sortBy: "name" | "created" | "lastUsed" | "serverCount";
+  sortOrder: "asc" | "desc";
   onSearchQueryChange: (query: string) => void;
-  onSortToggle: (field: 'name' | 'created' | 'lastUsed' | 'serverCount') => void;
-  onSwitchProfile: (profile: ProfileSummary) => void;
+  onSortToggle: (field: "name" | "created" | "lastUsed" | "serverCount") => void;
   onCreateProfile: () => void;
   onRefresh: () => void;
   onRetry: () => void;
@@ -27,7 +26,6 @@ export interface ProfileListViewProps {
 
 export function ProfileListView({
   profiles,
-  activeProfileId,
   isLoading,
   error,
   searchQuery,
@@ -35,10 +33,9 @@ export function ProfileListView({
   sortOrder,
   onSearchQueryChange,
   onSortToggle,
-  onSwitchProfile,
   onCreateProfile,
   onRefresh,
-  onRetry
+  onRetry,
 }: ProfileListViewProps) {
   const getProfileIcon = (profile: ProfileSummary) => {
     if (profile.isActive) {
@@ -126,9 +123,9 @@ export function ProfileListView({
   }
 
   return (
-    <List 
-      isLoading={isLoading} 
-      searchBarPlaceholder="Search profiles..." 
+    <List
+      isLoading={isLoading}
+      searchBarPlaceholder="Search profiles..."
       navigationTitle="MCP Profiles"
       searchText={searchQuery}
       onSearchTextChange={onSearchQueryChange}
@@ -156,11 +153,10 @@ export function ProfileListView({
             actions={
               <ActionPanel>
                 <ActionPanel.Section>
-                  <Action
-                    title={profile.isActive ? "Already Active" : "Switch to Profile"}
-                    onAction={() => onSwitchProfile(profile)}
-                    icon={profile.isActive ? Icon.CheckCircle : Icon.ArrowRight}
-                    style={profile.isActive ? Action.Style.Regular : Action.Style.Regular}
+                  <Action.Push
+                    title="View Details"
+                    target={<ProfileDetailView profileId={profile.id} onRefresh={onRefresh} />}
+                    icon={Icon.Eye}
                   />
                 </ActionPanel.Section>
                 <ActionPanel.Section>
@@ -192,9 +188,9 @@ export function ProfileListView({
                     shortcut={{ modifiers: ["cmd"], key: "n" }}
                   />
                   <Action
-                    title={`Sort by ${sortBy === 'name' ? 'Name' : sortBy === 'created' ? 'Created' : sortBy === 'lastUsed' ? 'Last Used' : 'Server Count'} (${sortOrder === 'asc' ? 'A-Z' : 'Z-A'})`}
+                    title={`Sort by ${sortBy === "name" ? "Name" : sortBy === "created" ? "Created" : sortBy === "lastUsed" ? "Last Used" : "Server Count"} (${sortOrder === "asc" ? "A-Z" : "Z-A"})`}
                     onAction={() => onSortToggle(sortBy)}
-                    icon={sortOrder === 'asc' ? Icon.ArrowUp : Icon.ArrowDown}
+                    icon={sortOrder === "asc" ? Icon.ArrowUp : Icon.ArrowDown}
                     shortcut={{ modifiers: ["cmd"], key: "s" }}
                   />
                 </ActionPanel.Section>
