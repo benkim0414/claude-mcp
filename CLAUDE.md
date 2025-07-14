@@ -415,3 +415,52 @@ These commands make AI calls and may take up to a minute:
 ---
 
 _This guide ensures Claude Code has immediate access to Task Master's essential functionality for agentic development workflows._
+
+# Code style
+
+## Modules and imports
+
+- Use ES modules (import/export) syntax, not CommonJS (require)
+- Destructure imports when possible (eg. import { foo } from 'bar')
+- Group imports by type: external libraries, internal libraries, relative imports
+
+## Variable and function naming
+
+- Use descriptive names that explain purpose, not implementation
+- Use `is`, `has`, `can`, `should` prefixes for booleans
+- Make boolean intent clear in variable names
+- Use verbs for functions that perform actions
+- Use nouns for functions that return values
+- Be specific about what the function does
+
+## SOLID principles
+
+### Single Responsibility Principle (SRP)
+
+- Each class should have only one reason to change
+- Separate concerns into focused, cohesive units
+- Avoid classes that handle multiple responsibilities
+
+### Open/Closed Principle (OCP)
+
+- Classes should be open for extension but closed for modification
+- Use interfaces and composition to enable extensibility
+- Avoid modifying existing code when adding new features
+
+### Liskov Substitution Principle (LSP)
+
+- Subtypes must be substitutable for their base types
+- Derived classes must honor the contracts of their base classes
+- Avoid strengthening preconditions or weakening postconditions
+
+### Interface Segregation Principle (ISP)
+
+- Clients should not depend on interfaces they don't use
+- Create focused, role-specific interfaces
+- Avoid large, monolithic interfaces
+
+### Dependency Inversion Principle (DIP)
+
+- High-level modules should not depend on low-level modules
+- Both should depend on abstractions
+- Abstractions should not depend on details

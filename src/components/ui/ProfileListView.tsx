@@ -1,0 +1,208 @@
+/**
+ * Profile list view component following Single Responsibility Principle
+ * Pure UI component that only handles rendering, no business logic
+ */
+
+import React from "react";
+import { List, ActionPanel, Action, Icon, Color } from "@raycast/api";
+import { ProfileSummary } from "../../types/profile-types";
+import EditProfileForm from "../EditProfileForm";
+import DeleteProfileDetail from "../DeleteProfileDetail";
+
+export interface ProfileListViewProps {
+  profiles: ProfileSummary[];
+  activeProfileId: string | null;
+  isLoading: boolean;
+  error: string | null;
+  searchQuery: string;
+  sortBy: 'name' | 'created' | 'lastUsed' | 'serverCount';
+  sortOrder: 'asc' | 'desc';
+  onSearchQueryChange: (query: string) => void;
+  onSortToggle: (field: 'name' | 'created' | 'lastUsed' | 'serverCount') => void;
+  onSwitchProfile: (profile: ProfileSummary) => void;
+  onCreateProfile: () => void;
+  onRefresh: () => void;
+  onRetry: () => void;
+}
+
+export function ProfileListView({
+  profiles,
+  activeProfileId,
+  isLoading,
+  error,
+  searchQuery,
+  sortBy,
+  sortOrder,
+  onSearchQueryChange,
+  onSortToggle,
+  onSwitchProfile,
+  onCreateProfile,
+  onRefresh,
+  onRetry
+}: ProfileListViewProps) {
+  const getProfileIcon = (profile: ProfileSummary) => {
+    if (profile.isActive) {
+      return { source: Icon.CheckCircle, tintColor: Color.Green };
+    }
+    return { source: Icon.Circle, tintColor: Color.SecondaryText };
+  };
+
+  const getProfileSubtitle = (profile: ProfileSummary) => {
+    const parts = [];
+
+    if (profile.description) {
+      parts.push(profile.description);
+    }
+
+    if (profile.serverCount > 0) {
+      parts.push(`${profile.serverCount} server${profile.serverCount !== 1 ? "s" : ""}`);
+    }
+
+    return parts.join(" • ");
+  };
+
+  const getProfileAccessories = (profile: ProfileSummary) => {
+    const accessories = [];
+
+    if (profile.isActive) {
+      accessories.push({
+        text: "Active",
+        icon: { source: Icon.CheckCircle, tintColor: Color.Green },
+      });
+    }
+
+    // Show last used date if available
+    if (profile.lastUsed) {
+      const lastUsedDate = new Date(profile.lastUsed);
+      const now = new Date();
+      const diffMs = now.getTime() - lastUsedDate.getTime();
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 0) {
+        accessories.push({ text: "Used today" });
+      } else if (diffDays === 1) {
+        accessories.push({ text: "Used yesterday" });
+      } else if (diffDays < 7) {
+        accessories.push({ text: `Used ${diffDays} days ago` });
+      } else {
+        accessories.push({ text: `Used ${lastUsedDate.toLocaleDateString()}` });
+      }
+    } else {
+      // Show creation date for profiles that haven't been used
+      const createdDate = new Date(profile.createdAt);
+      const now = new Date();
+      const diffMs = now.getTime() - createdDate.getTime();
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 0) {
+        accessories.push({ text: "Created today" });
+      } else if (diffDays === 1) {
+        accessories.push({ text: "Created yesterday" });
+      } else if (diffDays < 7) {
+        accessories.push({ text: `Created ${diffDays} days ago` });
+      } else {
+        accessories.push({ text: `Created ${createdDate.toLocaleDateString()}` });
+      }
+    }
+
+    return accessories;
+  };
+
+  if (error) {
+    return (
+      <List>
+        <List.EmptyView
+          icon={{ source: Icon.ExclamationMark, tintColor: Color.Red }}
+          title="Error Loading Profiles"
+          description={error}
+          actions={
+            <ActionPanel>
+              <Action title="Retry" onAction={onRetry} icon={Icon.ArrowClockwise} />
+            </ActionPanel>
+          }
+        />
+      </List>
+    );
+  }
+
+  return (
+    <List 
+      isLoading={isLoading} 
+      searchBarPlaceholder="Search profiles..." 
+      navigationTitle="MCP Profiles"
+      searchText={searchQuery}
+      onSearchTextChange={onSearchQueryChange}
+    >
+      {profiles.length === 0 ? (
+        <List.EmptyView
+          icon={{ source: Icon.Folder, tintColor: Color.SecondaryText }}
+          title="No Profiles Found"
+          description="Create your first MCP profile to get started with managing your Claude Desktop configurations"
+          actions={
+            <ActionPanel>
+              <Action title="Refresh" onAction={onRefresh} icon={Icon.ArrowClockwise} />
+              <Action title="Create Profile" onAction={onCreateProfile} icon={Icon.Plus} />
+            </ActionPanel>
+          }
+        />
+      ) : (
+        profiles.map((profile) => (
+          <List.Item
+            key={profile.id}
+            icon={getProfileIcon(profile)}
+            title={profile.name}
+            subtitle={getProfileSubtitle(profile)}
+            accessories={getProfileAccessories(profile)}
+            actions={
+              <ActionPanel>
+                <ActionPanel.Section>
+                  <Action
+                    title={profile.isActive ? "Already Active" : "Switch to Profile"}
+                    onAction={() => onSwitchProfile(profile)}
+                    icon={profile.isActive ? Icon.CheckCircle : Icon.ArrowRight}
+                    style={profile.isActive ? Action.Style.Regular : Action.Style.Regular}
+                  />
+                </ActionPanel.Section>
+                <ActionPanel.Section>
+                  <Action.Push
+                    title="Edit Profile"
+                    target={<EditProfileForm profileId={profile.id} onRefresh={onRefresh} />}
+                    icon={Icon.Pencil}
+                    shortcut={{ modifiers: ["cmd"], key: "e" }}
+                  />
+                  <Action.Push
+                    title="Delete Profile"
+                    target={<DeleteProfileDetail profileId={profile.id} onRefresh={onRefresh} />}
+                    icon={Icon.Trash}
+                    style={Action.Style.Destructive}
+                    shortcut={{ modifiers: ["cmd", "shift"], key: "d" }}
+                  />
+                </ActionPanel.Section>
+                <ActionPanel.Section>
+                  <Action
+                    title="Refresh"
+                    onAction={onRefresh}
+                    icon={Icon.ArrowClockwise}
+                    shortcut={{ modifiers: ["cmd"], key: "r" }}
+                  />
+                  <Action
+                    title="Create New Profile"
+                    onAction={onCreateProfile}
+                    icon={Icon.Plus}
+                    shortcut={{ modifiers: ["cmd"], key: "n" }}
+                  />
+                  <Action
+                    title={`Sort by ${sortBy === 'name' ? 'Name' : sortBy === 'created' ? 'Created' : sortBy === 'lastUsed' ? 'Last Used' : 'Server Count'} (${sortOrder === 'asc' ? 'A-Z' : 'Z-A'})`}
+                    onAction={() => onSortToggle(sortBy)}
+                    icon={sortOrder === 'asc' ? Icon.ArrowUp : Icon.ArrowDown}
+                    shortcut={{ modifiers: ["cmd"], key: "s" }}
+                  />
+                </ActionPanel.Section>
+              </ActionPanel>
+            }
+          />
+        ))
+      )}
+    </List>
+  );
+}
