@@ -10,7 +10,7 @@ import { useProfileList, useProfileFilter, useProfileSort } from "../../hooks/us
 import { ServiceProvider } from "../../context/ServiceProvider";
 import { ProfileSummary } from "../../types/profile-types";
 
-export default function ProfileListContainer() {
+function ProfileListContent() {
   const {
     profiles,
     activeProfileId,
@@ -44,22 +44,28 @@ export default function ProfileListContainer() {
   };
 
   return (
+    <ProfileListView
+      profiles={sortedProfiles}
+      activeProfileId={activeProfileId}
+      isLoading={isLoading}
+      error={error}
+      searchQuery={searchQuery}
+      sortBy={sortBy}
+      sortOrder={sortOrder}
+      onSearchQueryChange={setSearchQuery}
+      onSortToggle={toggleSort}
+      onSwitchProfile={handleSwitchProfile}
+      onCreateProfile={handleCreateProfile}
+      onRefresh={refreshProfiles}
+      onRetry={handleRetry}
+    />
+  );
+}
+
+export default function ProfileListContainer() {
+  return (
     <ServiceProvider>
-      <ProfileListView
-        profiles={sortedProfiles}
-        activeProfileId={activeProfileId}
-        isLoading={isLoading}
-        error={error}
-        searchQuery={searchQuery}
-        sortBy={sortBy}
-        sortOrder={sortOrder}
-        onSearchQueryChange={setSearchQuery}
-        onSortToggle={toggleSort}
-        onSwitchProfile={handleSwitchProfile}
-        onCreateProfile={handleCreateProfile}
-        onRefresh={refreshProfiles}
-        onRetry={handleRetry}
-      />
+      <ProfileListContent />
     </ServiceProvider>
   );
 }
