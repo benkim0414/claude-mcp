@@ -4,11 +4,21 @@
  */
 
 import { useState, useEffect } from "react";
-import { Detail, ActionPanel, Action, showToast, Toast, useNavigation, Icon, Color, open } from "@raycast/api";
-import { getProfile, getActiveProfile } from "../utils/storage";
+import {
+  Detail,
+  ActionPanel,
+  Action,
+  showToast,
+  Toast,
+  useNavigation,
+  Icon,
+  Color,
+  open,
+  confirmAlert,
+} from "@raycast/api";
+import { getProfile, getActiveProfile, deleteProfile } from "../utils/storage";
 import { MCPProfile } from "../types";
 import EditProfileForm from "./EditProfileForm";
-import DeleteProfileDetail from "./DeleteProfileDetail";
 
 interface ProfileDetailViewProps {
   profileId: string;
@@ -71,6 +81,54 @@ export default function ProfileDetailView({ profileId, onRefresh }: ProfileDetai
       await showToast({
         style: Toast.Style.Failure,
         title: "Failed to switch profile",
+        message: error instanceof Error ? error.message : "Unknown error occurred",
+      });
+    }
+  };
+
+  const handleDeleteProfile = async () => {
+    if (!profile) return;
+
+    const shouldDelete = await confirmAlert({
+      title: `Delete "${profile.name}"?`,
+      message: `Are you sure you want to delete this profile? This action cannot be undone.${
+        isActive ? "\n\n⚠️ Warning: This is the currently active profile." : ""
+      }`,
+      primaryAction: {
+        title: "Delete",
+        style: Action.Style.Destructive,
+      },
+      dismissAction: {
+        title: "Cancel",
+      },
+    });
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    try {
+      const deleteResult = await deleteProfile(profileId);
+
+      if (!deleteResult.success) {
+        throw new Error(deleteResult.error || "Failed to delete profile");
+      }
+
+      await showToast({
+        style: Toast.Style.Success,
+        title: "Profile deleted",
+        message: `"${profile.name}" has been deleted`,
+      });
+
+      // Refresh parent list before navigating back
+      onRefresh?.();
+
+      // Navigate back to profiles list
+      pop();
+    } catch (error) {
+      await showToast({
+        style: Toast.Style.Failure,
+        title: "Failed to delete profile",
         message: error instanceof Error ? error.message : "Unknown error occurred",
       });
     }
@@ -160,9 +218,9 @@ Please check that the profile exists and try again.`}
                 icon={Icon.Pencil}
                 shortcut={{ modifiers: ["cmd"], key: "e" }}
               />
-              <Action.Push
+              <Action
                 title="Delete Profile"
-                target={<DeleteProfileDetail profileId={profileId} onRefresh={onRefresh} />}
+                onAction={handleDeleteProfile}
                 icon={Icon.Trash}
                 style={Action.Style.Destructive}
                 shortcut={{ modifiers: ["cmd", "shift"], key: "d" }}
