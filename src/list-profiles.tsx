@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { List, ActionPanel, Action, Toast, showToast, Icon, Color, confirmAlert, open } from "@raycast/api";
-import { getProfileSummaries, getActiveProfile, deleteProfile } from "./utils/storage";
+import { List, ActionPanel, Action, Toast, showToast, Icon, Color, open } from "@raycast/api";
+import { getProfileSummaries, getActiveProfile } from "./utils/storage";
 import { ProfileSummary } from "./types";
 import EditProfileForm from "./components/EditProfileForm";
 import DeleteProfileDetail from "./components/DeleteProfileDetail";
@@ -85,47 +85,7 @@ export default function ListProfiles() {
     await open(`raycast://extensions/benkim0414/claude-mcp/create-profile`);
   };
 
-  const handleDeleteProfile = async (profile: ProfileSummary) => {
-    const shouldDelete = await confirmAlert({
-      title: `Delete "${profile.name}"?`,
-      message: `Are you sure you want to delete this profile? This action cannot be undone.${
-        profile.isActive ? "\n\nNote: This is the currently active profile." : ""
-      }`,
-      primaryAction: {
-        title: "Delete",
-      },
-      dismissAction: {
-        title: "Cancel",
-      },
-    });
-
-    if (!shouldDelete) {
-      return;
-    }
-
-    try {
-      const deleteResult = await deleteProfile(profile.id);
-
-      if (!deleteResult.success) {
-        throw new Error(deleteResult.error || "Failed to delete profile");
-      }
-
-      await showToast({
-        style: Toast.Style.Success,
-        title: "Profile deleted",
-        message: `${profile.name} has been deleted`,
-      });
-
-      // Reload profiles to update the list
-      await loadProfiles();
-    } catch (error) {
-      await showToast({
-        style: Toast.Style.Failure,
-        title: "Failed to delete profile",
-        message: error instanceof Error ? error.message : "Unknown error occurred",
-      });
-    }
-  };
+  // Removed unused handleDeleteProfile function
 
   const getProfileIcon = (profile: ProfileSummary) => {
     if (profile.isActive) {

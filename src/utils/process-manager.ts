@@ -79,7 +79,10 @@ export async function isClaudeRunning(): Promise<StorageResult<ProcessStatus>> {
     // Also get detailed process info for debugging
     if (stdout.trim()) {
       try {
-        const { stdout: psOutput } = await execWithTimeout(`ps aux | grep -i claude | grep -v grep`, PROCESS_CONFIG.CHECK_TIMEOUT);
+        const { stdout: psOutput } = await execWithTimeout(
+          `ps aux | grep -i claude | grep -v grep`,
+          PROCESS_CONFIG.CHECK_TIMEOUT,
+        );
         console.log("Detailed Claude processes found:", psOutput);
       } catch (psError) {
         console.log("Could not get detailed process info:", psError);
@@ -249,7 +252,7 @@ async function forceQuitClaude(): Promise<ProcessOperationResult> {
     while (attempts < maxAttempts) {
       const statusResult = await isClaudeRunning();
       console.log(`Force quit check attempt ${attempts + 1}/${maxAttempts}: Claude running status:`, statusResult);
-      
+
       if (statusResult.success && statusResult.data && !statusResult.data.isRunning) {
         console.log("Claude Desktop force quit verified successfully");
         return {
@@ -276,7 +279,7 @@ async function forceQuitClaude(): Promise<ProcessOperationResult> {
     if (error instanceof Error && error.message.includes("Command failed")) {
       const statusResult = await isClaudeRunning();
       console.log("pkill failed, checking if Claude is actually running:", statusResult);
-      
+
       if (statusResult.success && statusResult.data && !statusResult.data.isRunning) {
         console.log("pkill failed but Claude is not running - assuming success");
         return {

@@ -1,15 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  Detail,
-  ActionPanel,
-  Action,
-  showToast,
-  Toast,
-  useNavigation,
-  confirmAlert,
-  Icon,
-  Color,
-} from "@raycast/api";
+import { Detail, ActionPanel, Action, showToast, Toast, useNavigation, confirmAlert, Icon, Color } from "@raycast/api";
 import { getProfile, deleteProfile, getActiveProfile } from "../utils/storage";
 import { MCPProfile } from "../types";
 
