@@ -30,7 +30,7 @@ export interface ProfileFormState {
 }
 
 export interface ProfileFormActions {
-  updateField: (field: keyof ProfileFormData, value: any) => void;
+  updateField: (field: keyof ProfileFormData, value: ProfileFormData[keyof ProfileFormData]) => void;
   updateServer: (index: number, field: keyof MCPServerFormData, value: string | string[]) => void;
   addServer: () => void;
   removeServer: (index: number) => void;
@@ -72,7 +72,7 @@ export function useProfileForm(
 
   const [originalData, setOriginalData] = useState<ProfileFormData>(initialFormData);
 
-  const updateField = useCallback((field: keyof ProfileFormData, value: any) => {
+  const updateField = useCallback((field: keyof ProfileFormData, value: ProfileFormData[keyof ProfileFormData]) => {
     setState((prev) => ({
       ...prev,
       formData: { ...prev.formData, [field]: value },

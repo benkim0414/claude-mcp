@@ -143,11 +143,12 @@ export function useProfileSort(profiles: ProfileSummary[]) {
         case "created":
           comparison = a.createdAt.getTime() - b.createdAt.getTime();
           break;
-        case "lastUsed":
+        case "lastUsed": {
           const aLastUsed = a.lastUsed?.getTime() || 0;
           const bLastUsed = b.lastUsed?.getTime() || 0;
           comparison = aLastUsed - bLastUsed;
           break;
+        }
         case "serverCount":
           comparison = a.serverCount - b.serverCount;
           break;

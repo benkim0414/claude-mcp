@@ -5,7 +5,9 @@
 
 import { useState, useCallback } from "react";
 import { ProfileSummary } from "../types/profile-types";
+import { StorageResult } from "../types";
 import { ProfileSwitchResult } from "../services/interfaces/IProfileManager";
+import { DetailedValidationResult } from "../utils/validation";
 import { useProfileManager, useNotificationService } from "../context/ServiceProvider";
 
 export interface ProfileSwitchingState {
@@ -163,7 +165,7 @@ export function useProfileSwitchValidation() {
 
   const [validationState, setValidationState] = useState<{
     isValidating: boolean;
-    validationResult: any | null;
+    validationResult: DetailedValidationResult | null;
     error: string | null;
   }>({
     isValidating: false,
@@ -230,7 +232,7 @@ export function useSystemStatus() {
 
   const [systemStatus, setSystemStatus] = useState<{
     isLoading: boolean;
-    status: any | null;
+    status: StorageResult<boolean> | null;
     error: string | null;
   }>({
     isLoading: false,

@@ -258,7 +258,7 @@ export class ProfileService implements IProfileManager {
             success: false,
             error: `Failed to restart Claude Desktop: ${restartResult.error}. Configuration has been restored from backup.`,
           };
-        } catch (restoreError) {
+        } catch {
           return {
             success: false,
             error: `Failed to restart Claude Desktop: ${restartResult.error}. CRITICAL: Failed to restore backup.`,
